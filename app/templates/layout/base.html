@@ -1,0 +1,23 @@
+{{define "base"}}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}CondoManager{{end}}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+</head>
+<body class="bg-gray-50 text-gray-900">
+    <div class="flex h-screen overflow-hidden">
+        {{block "sidebar" .}}{{end}}
+        <div class="flex flex-col flex-1 overflow-hidden">
+            {{block "topbar" .}}{{end}}
+            <main class="flex-1 overflow-y-auto p-6">
+                {{block "content" .}}{{end}}
+            </main>
+        </div>
+    </div>
+</body>
+</html>
+{{end}}
