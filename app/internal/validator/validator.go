@@ -1,4 +1,4 @@
-package util
+package validator
 
 import (
 	"fmt"
@@ -6,9 +6,9 @@ import (
 	"strings"
 )
 
-type ValidationErrors map[string]string
+type Errors map[string]string
 
-func (e ValidationErrors) Error() string {
+func (e Errors) Error() string {
 	msgs := make([]string, 0, len(e))
 	for field, msg := range e {
 		msgs = append(msgs, fmt.Sprintf("%s: %s", field, msg))
@@ -16,16 +16,16 @@ func (e ValidationErrors) Error() string {
 	return strings.Join(msgs, "; ")
 }
 
-func (e ValidationErrors) HasErrors() bool {
+func (e Errors) HasErrors() bool {
 	return len(e) > 0
 }
 
 type Validator struct {
-	errors ValidationErrors
+	errors Errors
 }
 
-func NewValidator() *Validator {
-	return &Validator{errors: make(ValidationErrors)}
+func New() *Validator {
+	return &Validator{errors: make(Errors)}
 }
 
 func (v *Validator) Required(field, value string) {
@@ -64,7 +64,7 @@ func (v *Validator) OneOf(field, value string, allowed []string) {
 	v.errors[field] = fmt.Sprintf("有効な値を選択してください: %s", strings.Join(allowed, ", "))
 }
 
-func (v *Validator) Errors() ValidationErrors {
+func (v *Validator) Errors() Errors {
 	return v.errors
 }
 

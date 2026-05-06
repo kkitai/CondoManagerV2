@@ -1,4 +1,4 @@
-package util
+package pagination
 
 import (
 	"math"
@@ -12,14 +12,14 @@ const (
 	MaxPerPage     = 100
 )
 
-type PaginationParams struct {
+type Params struct {
 	Page       int
 	PerPage    int
 	Total      int64
 	TotalPages int
 }
 
-func ParsePagination(r *http.Request) PaginationParams {
+func Parse(r *http.Request) Params {
 	page := parseInt(r.URL.Query().Get("page"), DefaultPage)
 	perPage := parseInt(r.URL.Query().Get("per_page"), DefaultPerPage)
 
@@ -33,24 +33,24 @@ func ParsePagination(r *http.Request) PaginationParams {
 		perPage = MaxPerPage
 	}
 
-	return PaginationParams{
+	return Params{
 		Page:    page,
 		PerPage: perPage,
 	}
 }
 
-func (p *PaginationParams) SetTotal(total int64) {
+func (p *Params) SetTotal(total int64) {
 	p.Total = total
 	if p.PerPage > 0 {
 		p.TotalPages = int(math.Ceil(float64(total) / float64(p.PerPage)))
 	}
 }
 
-func (p PaginationParams) Offset() int {
+func (p Params) Offset() int {
 	return (p.Page - 1) * p.PerPage
 }
 
-func (p PaginationParams) Limit() int {
+func (p Params) Limit() int {
 	return p.PerPage
 }
 

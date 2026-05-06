@@ -1,4 +1,4 @@
-package util
+package csvexport
 
 import (
 	"encoding/csv"
@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-type CSVExporter struct {
+type Exporter struct {
 	w *csv.Writer
 }
 
-func NewCSVExporter(w http.ResponseWriter, filename string) *CSVExporter {
+func New(w http.ResponseWriter, filename string) *Exporter {
 	if filename == "" {
 		filename = fmt.Sprintf("export_%s.csv", time.Now().Format("20060102_150405"))
 	}
@@ -19,17 +19,17 @@ func NewCSVExporter(w http.ResponseWriter, filename string) *CSVExporter {
 	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, filename))
 	// BOM for Excel UTF-8 compatibility
 	fmt.Fprintf(w, "\xEF\xBB\xBF")
-	return &CSVExporter{w: csv.NewWriter(w)}
+	return &Exporter{w: csv.NewWriter(w)}
 }
 
-func (e *CSVExporter) WriteHeader(columns []string) error {
+func (e *Exporter) WriteHeader(columns []string) error {
 	return e.w.Write(columns)
 }
 
-func (e *CSVExporter) WriteRow(row []string) error {
+func (e *Exporter) WriteRow(row []string) error {
 	return e.w.Write(row)
 }
 
-func (e *CSVExporter) Flush() {
+func (e *Exporter) Flush() {
 	e.w.Flush()
 }

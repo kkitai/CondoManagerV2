@@ -1,14 +1,14 @@
-package util_test
+package queryparam_test
 
 import (
 	"testing"
 	"time"
 
-	"github.com/kkitai/CondoManagerV2/app/internal/util"
+	"github.com/kkitai/CondoManagerV2/app/internal/queryparam"
 )
 
 func TestFilterBuilderEmpty(t *testing.T) {
-	fb := util.NewFilterBuilder()
+	fb := queryparam.NewFilterBuilder()
 	if got := fb.WhereClause(); got != "" {
 		t.Errorf("WhereClause = %q, want empty", got)
 	}
@@ -18,7 +18,7 @@ func TestFilterBuilderEmpty(t *testing.T) {
 }
 
 func TestFilterBuilderAddLike(t *testing.T) {
-	fb := util.NewFilterBuilder()
+	fb := queryparam.NewFilterBuilder()
 	fb.AddLike("name", "test")
 	clause := fb.WhereClause()
 	if clause != "WHERE name ILIKE $1" {
@@ -31,7 +31,7 @@ func TestFilterBuilderAddLike(t *testing.T) {
 }
 
 func TestFilterBuilderAddLikeEmpty(t *testing.T) {
-	fb := util.NewFilterBuilder()
+	fb := queryparam.NewFilterBuilder()
 	fb.AddLike("name", "")
 	if got := fb.WhereClause(); got != "" {
 		t.Errorf("expected empty clause, got %q", got)
@@ -39,7 +39,7 @@ func TestFilterBuilderAddLikeEmpty(t *testing.T) {
 }
 
 func TestFilterBuilderAddEqual(t *testing.T) {
-	fb := util.NewFilterBuilder()
+	fb := queryparam.NewFilterBuilder()
 	fb.AddEqual("status", "active")
 	clause := fb.WhereClause()
 	if clause != "WHERE status = $1" {
@@ -48,7 +48,7 @@ func TestFilterBuilderAddEqual(t *testing.T) {
 }
 
 func TestFilterBuilderAddEqualEmpty(t *testing.T) {
-	fb := util.NewFilterBuilder()
+	fb := queryparam.NewFilterBuilder()
 	fb.AddEqual("status", "")
 	if got := fb.WhereClause(); got != "" {
 		t.Errorf("expected empty clause, got %q", got)
@@ -56,7 +56,7 @@ func TestFilterBuilderAddEqualEmpty(t *testing.T) {
 }
 
 func TestFilterBuilderMultiple(t *testing.T) {
-	fb := util.NewFilterBuilder()
+	fb := queryparam.NewFilterBuilder()
 	fb.AddLike("name", "foo")
 	fb.AddEqual("status", "active")
 	clause := fb.WhereClause()
@@ -66,7 +66,7 @@ func TestFilterBuilderMultiple(t *testing.T) {
 }
 
 func TestFilterBuilderDateRange(t *testing.T) {
-	fb := util.NewFilterBuilder()
+	fb := queryparam.NewFilterBuilder()
 	from := time.Date(2024, 1, 1, 0, 0, 0, 0, time.UTC)
 	to := time.Date(2024, 12, 31, 0, 0, 0, 0, time.UTC)
 	fb.AddDateRange("created_at", from, to)
@@ -76,5 +76,25 @@ func TestFilterBuilderDateRange(t *testing.T) {
 	}
 	if len(fb.Args()) != 2 {
 		t.Errorf("Args len = %d, want 2", len(fb.Args()))
+	}
+}
+
+func TestFilterBuilderAdd(t *testing.T) {
+	fb := queryparam.NewFilterBuilder()
+	fb.Add("status = $1", "active")
+	clause := fb.WhereClause()
+	if clause == "" {
+		t.Error("expected non-empty where clause")
+	}
+}
+
+func TestFilterBuilderNextIndex(t *testing.T) {
+	fb := queryparam.NewFilterBuilder()
+	if fb.NextIndex() != 1 {
+		t.Errorf("NextIndex = %d, want 1", fb.NextIndex())
+	}
+	fb.AddEqual("status", "active")
+	if fb.NextIndex() != 2 {
+		t.Errorf("NextIndex = %d, want 2", fb.NextIndex())
 	}
 }

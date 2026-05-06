@@ -1,13 +1,13 @@
-package util_test
+package validator_test
 
 import (
 	"testing"
 
-	"github.com/kkitai/CondoManagerV2/app/internal/util"
+	"github.com/kkitai/CondoManagerV2/app/internal/validator"
 )
 
-func TestValidatorRequired(t *testing.T) {
-	v := util.NewValidator()
+func TestRequired(t *testing.T) {
+	v := validator.New()
 	v.Required("name", "")
 	if v.Valid() {
 		t.Error("expected invalid")
@@ -17,23 +17,39 @@ func TestValidatorRequired(t *testing.T) {
 	}
 }
 
-func TestValidatorRequiredValid(t *testing.T) {
-	v := util.NewValidator()
+func TestRequiredValid(t *testing.T) {
+	v := validator.New()
 	v.Required("name", "John")
 	if !v.Valid() {
 		t.Error("expected valid")
 	}
 }
 
-func TestValidatorMaxLength(t *testing.T) {
-	v := util.NewValidator()
+func TestMaxLength(t *testing.T) {
+	v := validator.New()
 	v.MaxLength("name", "あいうえおかきくけこ", 5)
 	if v.Valid() {
 		t.Error("expected invalid")
 	}
 }
 
-func TestValidatorEmail(t *testing.T) {
+func TestMinLength(t *testing.T) {
+	v := validator.New()
+	v.MinLength("password", "ab", 8)
+	if v.Valid() {
+		t.Error("expected invalid for too-short value")
+	}
+}
+
+func TestMinLengthValid(t *testing.T) {
+	v := validator.New()
+	v.MinLength("password", "abcdefgh", 8)
+	if !v.Valid() {
+		t.Error("expected valid")
+	}
+}
+
+func TestEmail(t *testing.T) {
 	tests := []struct {
 		email string
 		valid bool
@@ -43,7 +59,7 @@ func TestValidatorEmail(t *testing.T) {
 		{"", true},
 	}
 	for _, tc := range tests {
-		v := util.NewValidator()
+		v := validator.New()
 		v.Email("email", tc.email)
 		if v.Valid() != tc.valid {
 			t.Errorf("email=%q: valid=%v, want %v", tc.email, v.Valid(), tc.valid)
@@ -51,24 +67,24 @@ func TestValidatorEmail(t *testing.T) {
 	}
 }
 
-func TestValidatorOneOf(t *testing.T) {
-	v := util.NewValidator()
+func TestOneOf(t *testing.T) {
+	v := validator.New()
 	v.OneOf("role", "superuser", []string{"admin", "general"})
 	if v.Valid() {
 		t.Error("expected invalid for unknown role")
 	}
 }
 
-func TestValidatorOneOfValid(t *testing.T) {
-	v := util.NewValidator()
+func TestOneOfValid(t *testing.T) {
+	v := validator.New()
 	v.OneOf("role", "admin", []string{"admin", "general"})
 	if !v.Valid() {
 		t.Error("expected valid")
 	}
 }
 
-func TestValidationErrorsError(t *testing.T) {
-	e := util.ValidationErrors{"field": "必須項目です"}
+func TestErrorsError(t *testing.T) {
+	e := validator.Errors{"field": "必須項目です"}
 	if e.Error() == "" {
 		t.Error("expected non-empty error message")
 	}

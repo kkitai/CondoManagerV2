@@ -1,16 +1,16 @@
-package util_test
+package csvexport_test
 
 import (
 	"net/http/httptest"
 	"strings"
 	"testing"
 
-	"github.com/kkitai/CondoManagerV2/app/internal/util"
+	"github.com/kkitai/CondoManagerV2/app/internal/csvexport"
 )
 
-func TestCSVExporter(t *testing.T) {
+func TestExporter(t *testing.T) {
 	rr := httptest.NewRecorder()
-	exp := util.NewCSVExporter(rr, "test.csv")
+	exp := csvexport.New(rr, "test.csv")
 
 	if err := exp.WriteHeader([]string{"id", "name", "email"}); err != nil {
 		t.Fatalf("WriteHeader error: %v", err)
@@ -33,9 +33,9 @@ func TestCSVExporter(t *testing.T) {
 	}
 }
 
-func TestCSVExporterDefaultFilename(t *testing.T) {
+func TestExporterDefaultFilename(t *testing.T) {
 	rr := httptest.NewRecorder()
-	exp := util.NewCSVExporter(rr, "")
+	exp := csvexport.New(rr, "")
 	exp.Flush()
 
 	cd := rr.Header().Get("Content-Disposition")
