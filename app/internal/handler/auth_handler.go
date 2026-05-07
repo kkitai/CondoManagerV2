@@ -10,11 +10,11 @@ import (
 
 type AuthHandler struct {
 	renderer   *Renderer
-	authSvc    *service.AuthService
+	authSvc    service.AuthServicer
 	sessionTTL time.Duration
 }
 
-func NewAuthHandler(renderer *Renderer, authSvc *service.AuthService, sessionTTL time.Duration) *AuthHandler {
+func NewAuthHandler(renderer *Renderer, authSvc service.AuthServicer, sessionTTL time.Duration) *AuthHandler {
 	return &AuthHandler{
 		renderer:   renderer,
 		authSvc:    authSvc,

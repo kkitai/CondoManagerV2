@@ -18,12 +18,12 @@ import (
 )
 
 type UserHandler struct {
-	renderer       *Renderer
-	userSvc        *service.UserService
-	invitationSvc  *service.InvitationService
+	renderer      *Renderer
+	userSvc       service.UserServicer
+	invitationSvc service.InvitationServicer
 }
 
-func NewUserHandler(renderer *Renderer, userSvc *service.UserService, invitationSvc *service.InvitationService) *UserHandler {
+func NewUserHandler(renderer *Renderer, userSvc service.UserServicer, invitationSvc service.InvitationServicer) *UserHandler {
 	return &UserHandler{
 		renderer:      renderer,
 		userSvc:       userSvc,

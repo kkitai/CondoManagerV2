@@ -11,10 +11,10 @@ import (
 
 type InvitationHandler struct {
 	renderer      *Renderer
-	invitationSvc *service.InvitationService
+	invitationSvc service.InvitationServicer
 }
 
-func NewInvitationHandler(renderer *Renderer, invitationSvc *service.InvitationService) *InvitationHandler {
+func NewInvitationHandler(renderer *Renderer, invitationSvc service.InvitationServicer) *InvitationHandler {
 	return &InvitationHandler{
 		renderer:      renderer,
 		invitationSvc: invitationSvc,
