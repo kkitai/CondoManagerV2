@@ -2,10 +2,36 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"net/http"
 	"path/filepath"
+	"time"
 )
+
+var templateFuncs = template.FuncMap{
+	"deref": func(s *string) string {
+		if s == nil {
+			return ""
+		}
+		return *s
+	},
+	"string": func(v any) string {
+		return fmt.Sprintf("%s", v)
+	},
+	"formatTime": func(t *time.Time) string {
+		if t == nil {
+			return ""
+		}
+		return t.Format("2006-01-02 15:04")
+	},
+	"formatDate": func(t time.Time) string {
+		return t.Format("2006-01-02")
+	},
+	"add":      func(a, b int) int { return a + b },
+	"subtract": func(a, b int) int { return a - b },
+	"not":      func(b bool) bool { return !b },
+}
 
 type Renderer struct {
 	templateDir string
@@ -19,35 +45,35 @@ func (r *Renderer) HTML(w http.ResponseWriter, status int, tmplName string, data
 	pattern := filepath.Join(r.templateDir, "layout", "*.html")
 	tmplPath := filepath.Join(r.templateDir, tmplName)
 
-	tmpl, err := template.ParseGlob(pattern)
+	tmpl, err := template.New("").Funcs(templateFuncs).ParseGlob(pattern)
 	if err != nil {
-		http.Error(w, "template parse error", http.StatusInternalServerError)
+		http.Error(w, "template parse error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	tmpl, err = tmpl.ParseFiles(tmplPath)
 	if err != nil {
-		http.Error(w, "template parse error", http.StatusInternalServerError)
+		http.Error(w, "template parse error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	if err := tmpl.ExecuteTemplate(w, "base", data); err != nil {
-		http.Error(w, "template execute error", http.StatusInternalServerError)
+		http.Error(w, "template execute error: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (r *Renderer) Partial(w http.ResponseWriter, status int, tmplName string, data any) {
 	tmplPath := filepath.Join(r.templateDir, tmplName)
-	tmpl, err := template.ParseFiles(tmplPath)
+	tmpl, err := template.New("").Funcs(templateFuncs).ParseFiles(tmplPath)
 	if err != nil {
-		http.Error(w, "template parse error", http.StatusInternalServerError)
+		http.Error(w, "template parse error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
 	if err := tmpl.Execute(w, data); err != nil {
-		http.Error(w, "template execute error", http.StatusInternalServerError)
+		http.Error(w, "template execute error: "+err.Error(), http.StatusInternalServerError)
 	}
 }
 

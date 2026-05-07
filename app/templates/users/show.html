@@ -1,0 +1,62 @@
+{{define "title"}}{{.User.Name}} — CondoManager{{end}}
+
+{{define "content"}}
+<div class="max-w-2xl mx-auto space-y-6">
+  <div class="flex items-center gap-4">
+    <a href="/users" class="text-gray-400 hover:text-gray-600">← 一覧に戻る</a>
+    <h1 class="text-2xl font-bold text-gray-900">{{.User.Name}}</h1>
+  </div>
+
+  <div class="bg-white shadow rounded-lg divide-y divide-gray-200">
+    <div class="px-6 py-4 flex justify-between items-center">
+      <span class="text-sm text-gray-500">メールアドレス</span>
+      <span class="text-sm font-medium text-gray-900">{{.User.Email}}</span>
+    </div>
+    <div class="px-6 py-4 flex justify-between items-center">
+      <span class="text-sm text-gray-500">ロール</span>
+      <span class="text-sm font-medium text-gray-900">
+        {{if eq (string .User.Role) "admin"}}管理者{{else}}一般{{end}}
+      </span>
+    </div>
+    <div class="px-6 py-4 flex justify-between items-center">
+      <span class="text-sm text-gray-500">ステータス</span>
+      <span class="text-sm font-medium text-gray-900">
+        {{if eq (string .User.Status) "active"}}有効
+        {{else if eq (string .User.Status) "invited"}}招待中
+        {{else}}無効{{end}}
+      </span>
+    </div>
+    <div class="px-6 py-4 flex justify-between items-center">
+      <span class="text-sm text-gray-500">部署</span>
+      <span class="text-sm text-gray-900">{{if .User.Department}}{{deref .User.Department}}{{else}}—{{end}}</span>
+    </div>
+    <div class="px-6 py-4 flex justify-between items-center">
+      <span class="text-sm text-gray-500">役職</span>
+      <span class="text-sm text-gray-900">{{if .User.JobTitle}}{{deref .User.JobTitle}}{{else}}—{{end}}</span>
+    </div>
+    <div class="px-6 py-4 flex justify-between items-center">
+      <span class="text-sm text-gray-500">最終ログイン</span>
+      <span class="text-sm text-gray-900">{{if .User.LastLoginAt}}{{formatTime .User.LastLoginAt}}{{else}}—{{end}}</span>
+    </div>
+    <div class="px-6 py-4 flex justify-between items-center">
+      <span class="text-sm text-gray-500">作成日</span>
+      <span class="text-sm text-gray-900">{{formatDate .User.CreatedAt}}</span>
+    </div>
+  </div>
+
+  <div class="flex gap-3">
+    <a href="/users/{{.User.ID}}/edit"
+      class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+      編集
+    </a>
+    {{if eq (string .User.Status) "invited"}}
+    <form method="POST" action="/users/{{.User.ID}}/invite">
+      <button type="submit"
+        class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-md">
+        招待メール送信
+      </button>
+    </form>
+    {{end}}
+  </div>
+</div>
+{{end}}

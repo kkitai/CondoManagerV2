@@ -1,0 +1,74 @@
+{{define "title"}}{{if .IsNew}}ユーザー追加{{else}}ユーザー編集{{end}} — CondoManager{{end}}
+
+{{define "content"}}
+<div class="max-w-2xl mx-auto space-y-6">
+  <div class="flex items-center gap-4">
+    <a href="/users" class="text-gray-400 hover:text-gray-600">← 一覧に戻る</a>
+    <h1 class="text-2xl font-bold text-gray-900">
+      {{if .IsNew}}ユーザー追加{{else}}ユーザー編集{{end}}
+    </h1>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-6">
+    <form method="POST" action="{{if .IsNew}}/users{{else}}/users/{{.User.ID}}{{end}}" class="space-y-5">
+      {{if not .IsNew}}
+        <input type="hidden" name="_method" value="PUT">
+      {{end}}
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">メールアドレス <span class="text-red-500">*</span></label>
+        <input type="email" name="email" value="{{.User.Email}}" required
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 {{if index .Errors "email"}}border-red-400{{end}}">
+        {{if index .Errors "email"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "email"}}</p>{{end}}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">名前 <span class="text-red-500">*</span></label>
+        <input type="text" name="name" value="{{.User.Name}}" required
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 {{if index .Errors "name"}}border-red-400{{end}}">
+        {{if index .Errors "name"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "name"}}</p>{{end}}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">ロール <span class="text-red-500">*</span></label>
+        <select name="role" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="general" {{if eq (string .User.Role) "general"}}selected{{end}}>一般</option>
+          <option value="admin" {{if eq (string .User.Role) "admin"}}selected{{end}}>管理者</option>
+        </select>
+        {{if index .Errors "role"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "role"}}</p>{{end}}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">部署</label>
+        <input type="text" name="department" value="{{deref .User.Department}}"
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">役職</label>
+        <input type="text" name="job_title" value="{{deref .User.JobTitle}}"
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+      </div>
+
+      {{if .IsNew}}
+      <div>
+        <label class="block text-sm font-medium text-gray-700">パスワード（空欄の場合は招待メールで設定）</label>
+        <input type="password" name="password" autocomplete="new-password"
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <p class="mt-1 text-xs text-gray-500">空欄にすると招待メールが送信されます</p>
+      </div>
+      {{end}}
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+          {{if .IsNew}}作成{{else}}保存{{end}}
+        </button>
+        <a href="/users" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md">
+          キャンセル
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

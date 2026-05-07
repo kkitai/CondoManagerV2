@@ -29,7 +29,7 @@ CREATE INDEX idx_claims_severity      ON claims (severity);
 CREATE INDEX idx_claims_assignee_id   ON claims (assignee_id);
 CREATE INDEX idx_claims_category      ON claims (category);
 CREATE INDEX idx_claims_created_at    ON claims (created_at DESC);
-CREATE INDEX idx_claims_fulltext      ON claims USING GIN (to_tsvector('japanese', title || ' ' || content));
+CREATE INDEX idx_claims_fulltext      ON claims USING GIN (to_tsvector('simple', title || ' ' || content));
 
 -- +goose Down
 DROP TABLE IF EXISTS claims;
