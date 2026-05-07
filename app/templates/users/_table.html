@@ -1,0 +1,7 @@
+{{range .Users}}
+  {{template "_row.html" .}}
+{{else}}
+<tr>
+  <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">ユーザーが見つかりません</td>
+</tr>
+{{end}}

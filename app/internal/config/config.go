@@ -11,6 +11,7 @@ type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
 	App      AppConfig
+	SMTP     SMTPConfig
 }
 
 type ServerConfig struct {
@@ -36,6 +37,15 @@ type AppConfig struct {
 	AllowedOrigins string
 	UploadDir      string
 	MaxUploadSize  int64
+	BaseURL        string
+}
+
+type SMTPConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	From     string
 }
 
 func (d DatabaseConfig) DSN() string {
@@ -66,6 +76,14 @@ func Load() (*Config, error) {
 			AllowedOrigins: getEnv("ALLOWED_ORIGINS", "*"),
 			UploadDir:      getEnv("UPLOAD_DIR", "app/uploads"),
 			MaxUploadSize:  getInt64("MAX_UPLOAD_SIZE", 10*1024*1024),
+			BaseURL:        getEnv("APP_BASE_URL", "http://localhost:8080"),
+		},
+		SMTP: SMTPConfig{
+			Host:     getEnv("SMTP_HOST", ""),
+			Port:     getEnv("SMTP_PORT", "587"),
+			User:     getEnv("SMTP_USER", ""),
+			Password: getEnv("SMTP_PASSWORD", ""),
+			From:     getEnv("SMTP_FROM", "noreply@condomanager.local"),
 		},
 	}
 
