@@ -6,191 +6,66 @@
 <title>物件管理 — CondoManager</title>
 <meta name="viewport" content="width=1536"/>
 {{template "property_css" .}}
-<style>
-  .page{padding:22px 28px 60px}
-  .page-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px}
-  .page-head h1{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:0}
-  .page-head .sub{color:var(--text-3);font-size:13px;margin-top:6px}
-  .head-actions{margin-left:auto;display:flex;align-items:center;gap:0}
-  .split{display:flex;align-items:stretch;position:relative}
-  .split .btn.primary{border-radius:8px 0 0 8px;padding-right:12px}
-  .split .split-chev{background:var(--primary);border:1px solid var(--primary);border-left:1px solid rgba(255,255,255,.25);color:#fff;border-radius:0 8px 8px 0;width:32px;display:grid;place-items:center;cursor:pointer}
-  .split .split-chev:hover{background:var(--primary-600)}
-  .menu{position:absolute;top:calc(100% + 6px);right:0;min-width:240px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 28px -8px rgba(20,30,55,.18),0 4px 8px -2px rgba(20,30,55,.08);padding:6px;z-index:60;display:none}
-  .menu.open{display:block}
-  .menu .mi{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;color:var(--text)}
-  .menu .mi:hover{background:#F4F6FA}
-  .menu .mi svg{color:var(--text-3);margin-top:1px;flex-shrink:0}
-  .menu .mi .t{font-weight:600;font-size:13.5px;line-height:1.3}
-  .menu .mi .d{color:var(--text-3);font-size:11.5px;margin-top:2px;line-height:1.4}
-  .menu .sep{height:1px;background:var(--border-soft);margin:4px 2px}
-
-  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:20px}
-  .kpi{background:#fff;border:1px solid var(--border-soft);border-radius:12px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;box-shadow:0 1px 0 rgba(20,30,55,.02)}
-  .kpi-ico{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
-  .kpi .lbl{font-size:12px;color:var(--text-3);margin-bottom:4px}
-  .kpi .num{font-size:24px;font-weight:700;letter-spacing:-.01em;line-height:1.1;white-space:nowrap}
-  .kpi .num .u{font-size:13px;color:var(--text-2);font-weight:600;margin-left:2px}
-  .kpi .sub{font-size:11.5px;color:var(--text-3);margin-top:4px}
-
-  .grid{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:16px;align-items:start}
-  .listcard{background:#fff;border:1px solid var(--border-soft);border-radius:12px;box-shadow:0 1px 0 rgba(20,30,55,.02)}
-  .toolbar{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border-soft)}
-  .toolbar .count{color:var(--text-3);font-size:13px}
-  .toolbar .right{margin-left:auto;display:flex;align-items:center;gap:10px}
-
-  table{width:100%;border-collapse:collapse}
-  thead th{font-size:12px;font-weight:600;color:var(--text-3);text-align:left;padding:12px;background:#FAFBFD;border-bottom:1px solid var(--border-soft);white-space:nowrap}
-  tbody td{padding:14px 12px;border-bottom:1px solid var(--border-soft);font-size:13.5px;color:var(--text);vertical-align:middle;white-space:nowrap}
-  tbody tr:last-child td{border-bottom:0}
-  tbody tr:hover{background:#FAFBFD}
-  .actions{display:flex;align-items:center;gap:6px}
-  .iconbtn{width:30px;height:30px;border:1px solid var(--border);background:#fff;border-radius:6px;color:var(--text-3);display:grid;place-items:center;cursor:pointer;text-decoration:none}
-  .iconbtn:hover{color:var(--text);background:#F4F6FA}
-
-  .pager{display:flex;align-items:center;justify-content:center;gap:6px;padding:16px}
-  .pg{min-width:32px;height:32px;padding:0 10px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
-  .pg:hover{background:#F4F6FA}
-  .pg.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:700}
-  .pg.icon{padding:0;width:32px;color:var(--text-3);border:1px solid var(--border)}
-  .pg.disabled{opacity:.4;pointer-events:none}
-
-  .filter{background:#fff;border:1px solid var(--border-soft);border-radius:12px;padding:18px;box-shadow:0 1px 0 rgba(20,30,55,.02);position:sticky;top:14px}
-  .filter h3{font-size:14px;font-weight:700;margin:0 0 14px}
-  .fgroup{margin-bottom:18px}
-  .fgroup .lab{font-size:12.5px;color:var(--text-2);font-weight:600;margin-bottom:8px}
-  .check-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text-2);cursor:pointer}
-  .check-row .left{display:flex;align-items:center;gap:10px}
-  .check-row .ct{color:var(--text-3);font-size:12px;font-feature-settings:"tnum"}
-  .cb{width:16px;height:16px;border:1.5px solid #C8CDD7;border-radius:4px;display:grid;place-items:center;flex-shrink:0;background:#fff}
-  .cb.checked{background:var(--primary);border-color:var(--primary)}
-  .cb.checked svg{display:block}
-  .cb svg{display:none;color:#fff}
-  .fdrop{display:flex;align-items:center;justify-content:space-between;width:100%;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text-2);cursor:pointer}
-  .fdrop:hover{background:#F9FAFC}
-  .frange{display:flex;align-items:center;gap:8px}
-  .frange input{flex:1;min-width:0;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text);font-family:inherit;outline:none}
-  .frange input::placeholder{color:var(--text-3)}
-  .fdate{position:relative;flex:1}
-  .fdate input{width:100%;height:36px;padding:0 28px 0 10px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text);font-family:inherit;outline:none}
-  .fdate .ico{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none}
-  .filter .foot{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;margin-top:14px}
-  .btn-clear{height:38px;border:1px solid var(--border);background:#fff;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--text-2);cursor:pointer;width:100%}
-  .btn-clear:hover{background:#F4F6FA}
-  .btn-apply{height:38px;border:1px solid var(--primary);background:var(--primary);color:#fff;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;width:100%}
-  .btn-apply:hover{background:var(--primary-600);border-color:var(--primary-600)}
-
-  .modal-overlay{position:fixed;inset:0;background:rgba(20,30,55,.42);display:none;align-items:flex-start;justify-content:center;z-index:100;overflow-y:auto;padding:48px 20px}
-  .modal-overlay.open{display:flex}
-  .modal{width:100%;max-width:760px;background:#fff;border-radius:14px;box-shadow:0 24px 60px -12px rgba(20,30,55,.28);display:flex;flex-direction:column;max-height:calc(100vh - 96px);overflow:hidden}
-  .modal-sm{max-width:560px}
-  .modal-head{padding:18px 22px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:12px}
-  .modal-head h2{margin:0;font-size:17px;font-weight:700}
-  .modal-head .x{margin-left:auto;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--text-3);cursor:pointer;border:0;background:transparent}
-  .modal-head .x:hover{background:#F4F6FA;color:var(--text)}
-  .modal-head .sub{color:var(--text-3);font-size:12.5px;margin-top:3px}
-  .modal-body{padding:20px 22px;overflow-y:auto}
-  .modal-foot{padding:14px 22px;border-top:1px solid var(--border-soft);display:flex;align-items:center;gap:8px;justify-content:flex-end;background:#FAFBFD}
-
-  .form-section{margin-bottom:22px}
-  .form-section:last-child{margin-bottom:0}
-  .form-section h3{font-size:13px;font-weight:700;color:var(--text-2);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px}
-  .form-section h3 .step{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--primary-50);color:var(--primary);font-size:11px;font-weight:700}
-  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .field{display:flex;flex-direction:column;gap:6px}
-  .field.full{grid-column:1/-1}
-  .field label{font-size:12.5px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:6px}
-  .field label .req{color:var(--red);font-size:11px;font-weight:700}
-  .field input,.field select,.field textarea{height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13.5px;color:var(--text);font-family:inherit;outline:none;width:100%}
-  .field textarea{height:auto;padding:10px 12px;min-height:72px;resize:vertical}
-  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(47,107,255,.12)}
-  .field input::placeholder,.field textarea::placeholder{color:var(--text-3)}
-  .field .hint{font-size:11.5px;color:var(--text-3)}
-  .field .err{font-size:11.5px;color:var(--red)}
-  .field select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A93A6' stroke-width='2'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
-  .input-suffix{position:relative}
-  .input-suffix .suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:12.5px;pointer-events:none}
-  .input-suffix input{padding-right:36px}
-
-  .picker-search{position:relative;margin-bottom:14px}
-  .picker-search input{height:40px;padding:0 12px 0 36px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13.5px;color:var(--text);font-family:inherit;outline:none;width:100%}
-  .picker-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-3)}
-  .picker-list{display:flex;flex-direction:column;border:1px solid var(--border-soft);border-radius:10px;overflow:hidden;max-height:380px;overflow-y:auto}
-  .picker-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border-soft);cursor:pointer;text-decoration:none;color:inherit}
-  .picker-row:last-child{border-bottom:0}
-  .picker-row:hover{background:#FAFBFD}
-  .picker-row .p-thumb{width:40px;height:40px;border-radius:8px;background:#E9ECF2;overflow:hidden;flex-shrink:0}
-  .picker-row .p-thumb svg{width:100%;height:100%;display:block}
-  .picker-row .info{flex:1;min-width:0}
-  .picker-row .info .n{font-weight:700;font-size:13.5px;color:var(--text)}
-  .picker-row .info .a{color:var(--text-3);font-size:12px;margin-top:2px}
-  .picker-row .go{color:var(--text-3);flex-shrink:0}
-  .picker-row:hover .go{color:var(--primary)}
-  .picker-empty{padding:30px;text-align:center;color:var(--text-3);font-size:13px}
-
-  .thumb{width:42px;height:42px;border-radius:8px;background:#E9ECF2;flex-shrink:0;overflow:hidden}
-  .thumb svg{width:100%;height:100%;display:block}
-  td.name-cell{white-space:nowrap}
-  .name-inner{display:flex;align-items:center;gap:12px}
-</style>
 <script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
 </head>
-<body>
-<div class="app">
+<body class="bg-cm-bg text-cm-text font-sans antialiased text-sm leading-relaxed">
+<div class="flex min-h-screen">
 
 {{template "property_sidebar" .}}
 
-<div class="main">
-  <header class="topbar">
-    <div class="hamb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></div>
-    <div class="crumbs">物件管理</div>
-    <div class="search">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-      <input placeholder="物件名、住所、管理会社名を検索…"/>
-      <span class="kbd">⌘K</span>
+<div class="flex-1 min-w-0 flex flex-col">
+  <header class="h-16 bg-white border-b border-cm-soft flex items-center gap-[18px] px-7">
+    <div class="w-8 h-8 grid place-items-center rounded-md text-cm-text2 cursor-pointer hover:bg-gray-50">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
     </div>
-    <div class="bell">
+    <div class="font-semibold text-cm-text flex items-center gap-2.5">物件管理</div>
+    <div class="ml-auto flex items-center gap-2.5 w-[380px] h-[38px] bg-[#F4F6FA] border border-transparent rounded-[10px] px-3 text-cm-text3 focus-within:bg-white focus-within:border-cm-border">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input class="flex-1 border-0 bg-transparent outline-none text-[13.5px] text-cm-text placeholder:text-cm-text3 font-sans" placeholder="物件名、住所、管理会社名を検索…"/>
+      <span class="font-[Inter,monospace] text-[11px] text-cm-text3 border border-cm-border px-1.5 py-0.5 rounded-[5px] bg-white">⌘K</span>
+    </div>
+    <div class="relative w-9 h-9 grid place-items-center rounded-lg text-cm-text2 cursor-pointer hover:bg-gray-50">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
     </div>
     {{if .CurrentUser}}
-    <div class="me">
-      <div class="me-init">{{slice (.CurrentUser.Name) 0 1}}</div>
+    <div class="flex items-center gap-2.5 px-2.5 py-1 rounded-[10px] cursor-pointer hover:bg-gray-50">
+      <div class="w-[34px] h-[34px] rounded-full bg-cm-primary-l text-cm-primary font-bold text-[13px] grid place-items-center">{{slice (.CurrentUser.Name) 0 1}}</div>
       <div>
-        <div class="nm">{{.CurrentUser.Name}}</div>
+        <div class="font-bold text-[13.5px]">{{.CurrentUser.Name}}</div>
       </div>
-      <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+      <svg class="text-cm-text3" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
     </div>
     {{end}}
   </header>
 
-  <div class="page">
-    <div class="page-head">
+  <div class="p-[22px_28px_60px]">
+    <div class="flex items-flex-start gap-3.5 mb-5">
       <div>
-        <h1>物件管理</h1>
-        <div class="sub">管理物件の一覧・検索・詳細情報の確認ができます。</div>
+        <h1 class="text-[26px] font-bold tracking-tight m-0">物件管理</h1>
+        <div class="text-cm-text3 text-[13px] mt-1.5">管理物件の一覧・検索・詳細情報の確認ができます。</div>
       </div>
-      <div class="head-actions">
-        <div class="split" id="registerSplit">
-          <button class="btn primary" id="openRegister" type="button">
+      <div class="ml-auto flex items-center">
+        <div class="flex items-stretch relative" id="registerSplit">
+          <button class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-l-lg font-semibold text-[13.5px] cursor-pointer bg-cm-primary border border-cm-primary text-white hover:bg-cm-primary-d" id="openRegister" type="button">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
             物件を登録
           </button>
-          <div class="split-chev" id="openSplitMenu">
+          <div class="bg-cm-primary border border-cm-primary border-l-white/25 text-white rounded-r-lg w-8 grid place-items-center cursor-pointer hover:bg-cm-primary-d" id="openSplitMenu">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg>
           </div>
-          <div class="menu" id="splitMenu">
-            <div class="mi" data-act="register">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
-              <div><div class="t">新規物件を登録</div><div class="d">物件情報を新しく追加します</div></div>
+          <div class="hidden absolute top-[calc(100%+6px)] right-0 min-w-[240px] bg-white border border-cm-border rounded-xl shadow-[0_12px_28px_-8px_rgba(20,30,55,0.18),_0_4px_8px_-2px_rgba(20,30,55,0.08)] p-1.5 z-[60]" id="splitMenu">
+            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer text-cm-text hover:bg-gray-50" data-act="register">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-cm-text3 mt-0.5 flex-shrink-0"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+              <div><div class="font-semibold text-[13.5px] leading-snug">新規物件を登録</div><div class="text-cm-text3 text-[11.5px] mt-0.5 leading-snug">物件情報を新しく追加します</div></div>
             </div>
-            <div class="mi" data-act="edit">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
-              <div><div class="t">物件情報を修正</div><div class="d">既存の物件を選んで編集します</div></div>
+            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer text-cm-text hover:bg-gray-50" data-act="edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-cm-text3 mt-0.5 flex-shrink-0"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
+              <div><div class="font-semibold text-[13.5px] leading-snug">物件情報を修正</div><div class="text-cm-text3 text-[11.5px] mt-0.5 leading-snug">既存の物件を選んで編集します</div></div>
             </div>
-            <div class="sep"></div>
-            <div class="mi" data-act="export">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
-              <div><div class="t">CSVエクスポート</div><div class="d">物件一覧をCSVで出力します</div></div>
+            <div class="h-px bg-cm-soft my-1 mx-0.5"></div>
+            <div class="flex items-start gap-2.5 px-3 py-2.5 rounded-lg cursor-pointer text-cm-text hover:bg-gray-50" data-act="export">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="text-cm-text3 mt-0.5 flex-shrink-0"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+              <div><div class="font-semibold text-[13.5px] leading-snug">CSVエクスポート</div><div class="text-cm-text3 text-[11.5px] mt-0.5 leading-snug">物件一覧をCSVで出力します</div></div>
             </div>
           </div>
         </div>
@@ -198,94 +73,94 @@
     </div>
 
     <!-- KPI cards -->
-    <div class="kpis">
+    <div class="grid grid-cols-6 gap-3.5 mb-5">
       {{with .ListStats}}
-      <div class="kpi">
-        <div class="kpi-ico" style="background:#EEF1F7;color:#5D6B83">
+      <div class="bg-white border border-cm-soft rounded-xl p-[16px_18px] flex items-start gap-3.5 shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-[#EEF1F7] text-[#5D6B83]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 9h16M9 4v16"/></svg>
         </div>
         <div>
-          <div class="lbl">総物件数</div>
-          <div class="num num-mono">{{.TotalCount}}<span class="u">件</span></div>
-          <div class="sub">全体</div>
+          <div class="text-xs text-cm-text3 mb-1">総物件数</div>
+          <div class="text-2xl font-bold tracking-tight leading-none whitespace-nowrap">{{.TotalCount}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span></div>
+          <div class="text-[11.5px] text-cm-text3 mt-1">全体</div>
         </div>
       </div>
-      <div class="kpi">
-        <div class="kpi-ico" style="background:#E7F7ED;color:#16A34A">
+      <div class="bg-white border border-cm-soft rounded-xl p-[16px_18px] flex items-start gap-3.5 shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-cm-green-l text-cm-green">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
         </div>
         <div>
-          <div class="lbl">管理中</div>
-          <div class="num num-mono">{{.ActiveCount}}<span class="u">件</span></div>
-          <div class="sub">{{percentInt .ActiveCount .TotalCount}}%</div>
+          <div class="text-xs text-cm-text3 mb-1">管理中</div>
+          <div class="text-2xl font-bold tracking-tight leading-none whitespace-nowrap">{{.ActiveCount}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span></div>
+          <div class="text-[11.5px] text-cm-text3 mt-1">{{percentInt .ActiveCount .TotalCount}}%</div>
         </div>
       </div>
-      <div class="kpi">
-        <div class="kpi-ico" style="background:#FEF3DC;color:#B45309">
+      <div class="bg-white border border-cm-soft rounded-xl p-[16px_18px] flex items-start gap-3.5 shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-cm-amber-l text-[#B45309]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 10v5M12 18h.01"/></svg>
         </div>
         <div>
-          <div class="lbl">非管理物件</div>
-          <div class="num num-mono">{{.InactiveCount}}<span class="u">件</span></div>
-          <div class="sub">&nbsp;</div>
+          <div class="text-xs text-cm-text3 mb-1">非管理物件</div>
+          <div class="text-2xl font-bold tracking-tight leading-none whitespace-nowrap">{{.InactiveCount}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span></div>
+          <div class="text-[11.5px] text-cm-text3 mt-1">&nbsp;</div>
         </div>
       </div>
-      <div class="kpi">
-        <div class="kpi-ico" style="background:#EEF1F7;color:#5D6B83">
+      <div class="bg-white border border-cm-soft rounded-xl p-[16px_18px] flex items-start gap-3.5 shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-[#EEF1F7] text-[#5D6B83]">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="1.5"/><path d="M3 10h18M7 6V4M17 6V4"/></svg>
         </div>
         <div>
-          <div class="lbl">総戸数</div>
-          <div class="num num-mono">{{.TotalUnits}}<span class="u">戸</span></div>
-          <div class="sub">全体合計</div>
+          <div class="text-xs text-cm-text3 mb-1">総戸数</div>
+          <div class="text-2xl font-bold tracking-tight leading-none whitespace-nowrap">{{.TotalUnits}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">戸</span></div>
+          <div class="text-[11.5px] text-cm-text3 mt-1">全体合計</div>
         </div>
       </div>
-      <div class="kpi">
-        <div class="kpi-ico" style="background:#EAF1FF;color:#2F6BFF">
+      <div class="bg-white border border-cm-soft rounded-xl p-[16px_18px] flex items-start gap-3.5 shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-cm-primary-l text-cm-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
         </div>
         <div>
-          <div class="lbl">平均戸数</div>
-          <div class="num num-mono">{{formatFloat1 .AvgUnits}}<span class="u">戸</span></div>
-          <div class="sub">全体平均</div>
+          <div class="text-xs text-cm-text3 mb-1">平均戸数</div>
+          <div class="text-2xl font-bold tracking-tight leading-none whitespace-nowrap">{{formatFloat1 .AvgUnits}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">戸</span></div>
+          <div class="text-[11.5px] text-cm-text3 mt-1">全体平均</div>
         </div>
       </div>
-      <div class="kpi">
-        <div class="kpi-ico" style="background:#EAF1FF;color:#2F6BFF">
+      <div class="bg-white border border-cm-soft rounded-xl p-[16px_18px] flex items-start gap-3.5 shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-cm-primary-l text-cm-primary">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.7-3 3-4.5 5.5-4.5s4.8 1.5 5.5 4.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14c2 .3 3.5 1.5 4 3.7"/></svg>
         </div>
         <div>
-          <div class="lbl">管理物件数</div>
-          <div class="num num-mono">{{.ActiveCount}}<span class="u">件</span></div>
-          <div class="sub">&nbsp;</div>
+          <div class="text-xs text-cm-text3 mb-1">管理物件数</div>
+          <div class="text-2xl font-bold tracking-tight leading-none whitespace-nowrap">{{.ActiveCount}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span></div>
+          <div class="text-[11.5px] text-cm-text3 mt-1">&nbsp;</div>
         </div>
       </div>
       {{end}}
     </div>
 
-    <div class="grid">
+    <div class="grid grid-cols-[minmax(0,1fr)_240px] gap-4 items-start">
       <!-- LIST -->
-      <div class="listcard">
-        <div class="toolbar">
-          <div class="count">{{.Pagination.Total}}件中 {{add (multiply (subtract .Pagination.Page 1) .Pagination.PerPage) 1}}–{{minInt (multiply .Pagination.Page .Pagination.PerPage) (int64ToInt .Pagination.Total)}}件を表示</div>
-          <div class="right">
-            <a href="/properties/export?search={{.Query.Search}}&status={{.Query.Status}}" class="btn">
+      <div class="bg-white border border-cm-soft rounded-xl shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <div class="flex items-center gap-2.5 px-[18px] py-3.5 border-b border-cm-soft">
+          <div class="text-cm-text3 text-[13px]">{{.Pagination.Total}}件中 {{add (multiply (subtract .Pagination.Page 1) .Pagination.PerPage) 1}}–{{minInt (multiply .Pagination.Page .Pagination.PerPage) (int64ToInt .Pagination.Total)}}件を表示</div>
+          <div class="ml-auto flex items-center gap-2.5">
+            <a href="/properties/export?search={{.Query.Search}}&status={{.Query.Status}}" class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-lg font-semibold text-[13.5px] cursor-pointer border border-cm-border bg-white text-cm-text hover:bg-gray-50 no-underline">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>
               エクスポート
             </a>
           </div>
         </div>
 
-        <table id="properties-table">
+        <table class="w-full border-collapse" id="properties-table">
           <thead>
             <tr>
-              <th>物件名</th>
-              <th>所在地</th>
-              <th>総戸数</th>
-              <th>担当者</th>
-              <th>ステータス</th>
-              <th>最終更新日</th>
-              <th>アクション</th>
+              <th class="text-xs font-semibold text-cm-text3 text-left p-3 bg-[#FAFBFD] border-b border-cm-soft whitespace-nowrap">物件名</th>
+              <th class="text-xs font-semibold text-cm-text3 text-left p-3 bg-[#FAFBFD] border-b border-cm-soft whitespace-nowrap">所在地</th>
+              <th class="text-xs font-semibold text-cm-text3 text-left p-3 bg-[#FAFBFD] border-b border-cm-soft whitespace-nowrap">総戸数</th>
+              <th class="text-xs font-semibold text-cm-text3 text-left p-3 bg-[#FAFBFD] border-b border-cm-soft whitespace-nowrap">担当者</th>
+              <th class="text-xs font-semibold text-cm-text3 text-left p-3 bg-[#FAFBFD] border-b border-cm-soft whitespace-nowrap">ステータス</th>
+              <th class="text-xs font-semibold text-cm-text3 text-left p-3 bg-[#FAFBFD] border-b border-cm-soft whitespace-nowrap">最終更新日</th>
+              <th class="text-xs font-semibold text-cm-text3 text-left p-3 bg-[#FAFBFD] border-b border-cm-soft whitespace-nowrap">アクション</th>
             </tr>
           </thead>
           {{template "_table.html" .}}
@@ -293,26 +168,26 @@
 
         <!-- Pagination -->
         {{if gt .Pagination.TotalPages 1}}
-        <div class="pager">
+        <div class="flex items-center justify-center gap-1.5 p-4">
           {{if gt .Pagination.Page 1}}
-          <a class="pg icon" href="?page={{subtract .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}">
+          <a class="min-w-8 h-8 px-2.5 border border-cm-border bg-white rounded-md text-[13px] text-cm-text2 inline-flex items-center justify-center cursor-pointer no-underline hover:bg-gray-50" href="?page={{subtract .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
           </a>
           {{else}}
-          <span class="pg icon disabled">
+          <span class="min-w-8 h-8 px-2.5 border border-cm-border bg-white rounded-md text-[13px] text-cm-text2 inline-flex items-center justify-center opacity-40 pointer-events-none">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
           </span>
           {{end}}
           {{range $i := iterate .Pagination.TotalPages}}
           {{$p := add $i 1}}
-          <a class="pg{{if eq $p $.Pagination.Page}} active{{end}}" href="?page={{$p}}&search={{$.Query.Search}}&status={{$.Query.Status}}">{{$p}}</a>
+          <a class="min-w-8 h-8 px-2.5 border border-cm-border bg-white rounded-md text-[13px] text-cm-text2 inline-flex items-center justify-center cursor-pointer no-underline hover:bg-gray-50{{if eq $p $.Pagination.Page}} bg-cm-primary border-cm-primary text-white font-bold{{end}}" href="?page={{$p}}&search={{$.Query.Search}}&status={{$.Query.Status}}">{{$p}}</a>
           {{end}}
           {{if lt .Pagination.Page .Pagination.TotalPages}}
-          <a class="pg icon" href="?page={{add .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}">
+          <a class="min-w-8 h-8 px-2.5 border border-cm-border bg-white rounded-md text-[13px] text-cm-text2 inline-flex items-center justify-center cursor-pointer no-underline hover:bg-gray-50" href="?page={{add .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
           </a>
           {{else}}
-          <span class="pg icon disabled">
+          <span class="min-w-8 h-8 px-2.5 border border-cm-border bg-white rounded-md text-[13px] text-cm-text2 inline-flex items-center justify-center opacity-40 pointer-events-none">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
           </span>
           {{end}}
@@ -321,56 +196,71 @@
       </div>
 
       <!-- FILTER -->
-      <aside class="filter">
-        <h3>フィルター</h3>
+      <aside class="bg-white border border-cm-soft rounded-xl p-[18px] shadow-[0_1px_0_rgba(20,30,55,0.02)] sticky top-3.5">
+        <h3 class="text-[14px] font-bold m-0 mb-3.5">フィルター</h3>
         <form method="GET" action="/properties"
           hx-get="/properties"
           hx-target="#properties-table"
           hx-swap="outerHTML"
           hx-trigger="submit"
           id="filterForm">
-          <div class="fgroup">
-            <div class="lab">ステータス</div>
-            <div class="check-row" data-val="">
-              <div class="left"><span class="cb{{if eq .Query.Status ""}} checked{{end}}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><span>すべて</span></div>
+          <div class="mb-[18px]">
+            <div class="text-[12.5px] text-cm-text2 font-semibold mb-2">ステータス</div>
+            <div class="flex items-center justify-between py-1.5 text-[13px] text-cm-text2 cursor-pointer check-row" data-val="">
+              <div class="flex items-center gap-2.5">
+                <span class="inline-grid place-items-center w-4 h-4 rounded border-[1.5px] flex-shrink-0 cb{{if eq .Query.Status ""}} bg-cm-primary border-cm-primary{{else}} border-gray-300 bg-white{{end}}">
+                  <svg class="{{if ne .Query.Status ""}}hidden{{end}}" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg>
+                </span>
+                <span>すべて</span>
+              </div>
             </div>
-            <div class="check-row" data-val="active">
-              <div class="left"><span class="cb{{if eq .Query.Status "active"}} checked{{end}}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><span>管理中</span></div>
-              {{if .ListStats}}<span class="ct">{{.ListStats.ActiveCount}}</span>{{end}}
+            <div class="flex items-center justify-between py-1.5 text-[13px] text-cm-text2 cursor-pointer check-row" data-val="active">
+              <div class="flex items-center gap-2.5">
+                <span class="inline-grid place-items-center w-4 h-4 rounded border-[1.5px] flex-shrink-0 cb{{if eq .Query.Status "active"}} bg-cm-primary border-cm-primary{{else}} border-gray-300 bg-white{{end}}">
+                  <svg class="{{if ne .Query.Status "active"}}hidden{{end}}" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg>
+                </span>
+                <span>管理中</span>
+              </div>
+              {{if .ListStats}}<span class="text-cm-text3 text-[12px]">{{.ListStats.ActiveCount}}</span>{{end}}
             </div>
-            <div class="check-row" data-val="inactive">
-              <div class="left"><span class="cb{{if eq .Query.Status "inactive"}} checked{{end}}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><span>非管理</span></div>
-              {{if .ListStats}}<span class="ct">{{.ListStats.InactiveCount}}</span>{{end}}
+            <div class="flex items-center justify-between py-1.5 text-[13px] text-cm-text2 cursor-pointer check-row" data-val="inactive">
+              <div class="flex items-center gap-2.5">
+                <span class="inline-grid place-items-center w-4 h-4 rounded border-[1.5px] flex-shrink-0 cb{{if eq .Query.Status "inactive"}} bg-cm-primary border-cm-primary{{else}} border-gray-300 bg-white{{end}}">
+                  <svg class="{{if ne .Query.Status "inactive"}}hidden{{end}}" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg>
+                </span>
+                <span>非管理</span>
+              </div>
+              {{if .ListStats}}<span class="text-cm-text3 text-[12px]">{{.ListStats.InactiveCount}}</span>{{end}}
             </div>
             <input type="hidden" name="status" id="statusInput" value="{{.Query.Status}}">
           </div>
 
-          <div class="fgroup">
-            <div class="lab">総戸数</div>
-            <div class="frange">
-              <input name="unit_min" placeholder="戸数(最小)" value="">
-              <span class="muted">〜</span>
-              <input name="unit_max" placeholder="戸数(最大)" value="">
+          <div class="mb-[18px]">
+            <div class="text-[12.5px] text-cm-text2 font-semibold mb-2">総戸数</div>
+            <div class="flex items-center gap-2">
+              <input class="flex-1 min-w-0 h-9 px-2.5 border border-cm-border rounded-lg bg-white text-[13px] text-cm-text font-sans outline-none placeholder:text-cm-text3" name="unit_min" placeholder="戸数(最小)" value="">
+              <span class="text-cm-text3">〜</span>
+              <input class="flex-1 min-w-0 h-9 px-2.5 border border-cm-border rounded-lg bg-white text-[13px] text-cm-text font-sans outline-none placeholder:text-cm-text3" name="unit_max" placeholder="戸数(最大)" value="">
             </div>
           </div>
-          <div class="fgroup">
-            <div class="lab">最終更新日</div>
-            <div class="frange">
-              <div class="fdate">
-                <input name="updated_from" type="date" placeholder="開始日">
-                <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
+          <div class="mb-[18px]">
+            <div class="text-[12.5px] text-cm-text2 font-semibold mb-2">最終更新日</div>
+            <div class="flex items-center gap-2">
+              <div class="relative flex-1">
+                <input class="w-full h-9 px-2.5 pr-7 border border-cm-border rounded-lg bg-white text-[13px] text-cm-text font-sans outline-none" name="updated_from" type="date" placeholder="開始日">
+                <svg class="absolute right-2 top-1/2 -translate-y-1/2 text-cm-text3 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
               </div>
-              <span class="muted">〜</span>
-              <div class="fdate">
-                <input name="updated_to" type="date" placeholder="終了日">
-                <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
+              <span class="text-cm-text3">〜</span>
+              <div class="relative flex-1">
+                <input class="w-full h-9 px-2.5 pr-7 border border-cm-border rounded-lg bg-white text-[13px] text-cm-text font-sans outline-none" name="updated_to" type="date" placeholder="終了日">
+                <svg class="absolute right-2 top-1/2 -translate-y-1/2 text-cm-text3 pointer-events-none" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
               </div>
             </div>
           </div>
 
-          <div class="foot">
-            <button type="button" class="btn-clear" onclick="clearFilter()">クリア</button>
-            <button type="submit" class="btn-apply">条件を適用</button>
+          <div class="grid grid-cols-[1fr_1.2fr] gap-2.5 mt-3.5">
+            <button type="button" class="h-[38px] border border-cm-border bg-white rounded-lg font-semibold text-[13.5px] text-cm-text2 cursor-pointer w-full hover:bg-gray-50" onclick="clearFilter()">クリア</button>
+            <button type="submit" class="h-[38px] border border-cm-primary bg-cm-primary text-white rounded-lg font-bold text-[13.5px] cursor-pointer w-full hover:bg-cm-primary-d hover:border-cm-primary-d">条件を適用</button>
           </div>
         </form>
       </aside>
@@ -380,120 +270,149 @@
 </div>
 
 <!-- Modal: Register form -->
-<div class="modal-overlay" id="formModal">
-  <div class="modal" role="dialog" aria-modal="true">
-    <div class="modal-head">
+<div class="hidden fixed inset-0 bg-[rgba(20,30,55,0.42)] items-start justify-center z-[100] overflow-y-auto py-12 px-5" id="formModal">
+  <div class="w-full max-w-[760px] bg-white rounded-[14px] shadow-[0_24px_60px_-12px_rgba(20,30,55,0.28)] flex flex-col max-h-[calc(100vh-96px)] overflow-hidden" role="dialog" aria-modal="true">
+    <div class="px-[22px] py-[18px] border-b border-cm-soft flex items-center gap-3">
       <div>
-        <h2 id="formTitle">物件を登録</h2>
-        <div class="sub" id="formSub">基本情報・所在地・管理情報を入力してください</div>
+        <h2 class="m-0 text-[17px] font-bold" id="formTitle">物件を登録</h2>
+        <div class="text-cm-text3 text-[12.5px] mt-0.5" id="formSub">基本情報・所在地・管理情報を入力してください</div>
       </div>
-      <button class="x" data-close aria-label="閉じる"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <button class="ml-auto w-8 h-8 rounded-lg grid place-items-center text-cm-text3 cursor-pointer border-0 bg-transparent hover:bg-gray-50 hover:text-cm-text" data-close aria-label="閉じる">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
     </div>
-    <div class="modal-body">
+    <div class="px-[22px] py-5 overflow-y-auto">
       <form id="propForm" method="POST" action="/properties" autocomplete="off">
-        <div class="form-section">
-          <h3><span class="step">1</span>基本情報</h3>
-          <div class="fgrid">
-            <div class="field full">
-              <label>物件名 <span class="req">必須</span></label>
-              <input name="name" placeholder="例: アーバンコート渋谷" required>
+        <div class="mb-[22px]">
+          <h3 class="text-[13px] font-bold text-cm-text2 m-0 mb-3 pb-2 border-b border-cm-soft flex items-center gap-2">
+            <span class="inline-grid place-items-center w-5 h-5 rounded-full bg-cm-primary-l text-cm-primary text-[11px] font-bold">1</span>基本情報
+          </h3>
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="flex flex-col gap-1.5 col-span-2">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">物件名 <span class="text-cm-red text-[11px] font-bold">必須</span></label>
+              <input class="h-[38px] px-3 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3" name="name" placeholder="例: アーバンコート渋谷" required>
             </div>
-            <div class="field">
-              <label>ステータス</label>
-              <select name="status">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">ステータス</label>
+              <select class="h-[38px] px-3 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 appearance-none pr-8 bg-no-repeat bg-[right_12px_center]" style="background-image:url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A93A6' stroke-width='2'><path d='m6 9 6 6 6-6'/></svg>\")" name="status">
                 <option value="active">管理中</option>
                 <option value="inactive">非管理</option>
               </select>
             </div>
-            <div class="field">
-              <label>総戸数 <span class="req">必須</span></label>
-              <div class="input-suffix"><input name="unit_count" type="number" min="0" placeholder="0"><span class="suf">戸</span></div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">総戸数 <span class="text-cm-red text-[11px] font-bold">必須</span></label>
+              <div class="relative">
+                <input class="h-[38px] px-3 pr-9 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3" name="unit_count" type="number" min="0" placeholder="0">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-cm-text3 text-[12.5px] pointer-events-none">戸</span>
+              </div>
             </div>
-            <div class="field">
-              <label>延床面積</label>
-              <div class="input-suffix"><input name="area" type="number" step="0.01" placeholder="0.00"><span class="suf">㎡</span></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-section">
-          <h3><span class="step">2</span>所在地</h3>
-          <div class="fgrid">
-            <div class="field full">
-              <label>住所 <span class="req">必須</span></label>
-              <input name="address" placeholder="東京都渋谷区神南1-12-6" required>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">延床面積</label>
+              <div class="relative">
+                <input class="h-[38px] px-3 pr-9 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3" name="area" type="number" step="0.01" placeholder="0.00">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-cm-text3 text-[12.5px] pointer-events-none">㎡</span>
+              </div>
             </div>
           </div>
         </div>
 
-        <div class="form-section">
-          <h3><span class="step">3</span>管理情報</h3>
-          <div class="fgrid">
-            <div class="field">
-              <label>管理会社</label>
-              <input name="management_company" placeholder="例: 山田不動産株式会社">
+        <div class="mb-[22px]">
+          <h3 class="text-[13px] font-bold text-cm-text2 m-0 mb-3 pb-2 border-b border-cm-soft flex items-center gap-2">
+            <span class="inline-grid place-items-center w-5 h-5 rounded-full bg-cm-primary-l text-cm-primary text-[11px] font-bold">2</span>所在地
+          </h3>
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="flex flex-col gap-1.5 col-span-2">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">住所 <span class="text-cm-red text-[11px] font-bold">必須</span></label>
+              <input class="h-[38px] px-3 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3" name="address" placeholder="東京都渋谷区神南1-12-6" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="mb-0">
+          <h3 class="text-[13px] font-bold text-cm-text2 m-0 mb-3 pb-2 border-b border-cm-soft flex items-center gap-2">
+            <span class="inline-grid place-items-center w-5 h-5 rounded-full bg-cm-primary-l text-cm-primary text-[11px] font-bold">3</span>管理情報
+          </h3>
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">管理会社</label>
+              <input class="h-[38px] px-3 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3" name="management_company" placeholder="例: 山田不動産株式会社">
             </div>
           </div>
         </div>
       </form>
     </div>
-    <div class="modal-foot">
-      <button class="btn" data-close type="button">キャンセル</button>
-      <button class="btn primary" type="submit" form="propForm" id="submitBtn">登録する</button>
+    <div class="px-[22px] py-3.5 border-t border-cm-soft flex items-center gap-2 justify-end bg-[#FAFBFD]">
+      <button class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-lg font-semibold text-[13.5px] cursor-pointer border border-cm-border bg-white text-cm-text hover:bg-gray-50" data-close type="button">キャンセル</button>
+      <button class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-lg font-semibold text-[13.5px] cursor-pointer bg-cm-primary border border-cm-primary text-white hover:bg-cm-primary-d hover:border-cm-primary-d" type="submit" form="propForm" id="submitBtn">登録する</button>
     </div>
   </div>
 </div>
 
 <!-- Modal: Edit picker -->
-<div class="modal-overlay" id="pickModal">
-  <div class="modal modal-sm" role="dialog" aria-modal="true">
-    <div class="modal-head">
+<div class="hidden fixed inset-0 bg-[rgba(20,30,55,0.42)] items-start justify-center z-[100] overflow-y-auto py-12 px-5" id="pickModal">
+  <div class="w-full max-w-[560px] bg-white rounded-[14px] shadow-[0_24px_60px_-12px_rgba(20,30,55,0.28)] flex flex-col max-h-[calc(100vh-96px)] overflow-hidden" role="dialog" aria-modal="true">
+    <div class="px-[22px] py-[18px] border-b border-cm-soft flex items-center gap-3">
       <div>
-        <h2>修正する物件を選択</h2>
-        <div class="sub">物件を選ぶと編集フォームが開きます</div>
+        <h2 class="m-0 text-[17px] font-bold">修正する物件を選択</h2>
+        <div class="text-cm-text3 text-[12.5px] mt-0.5">物件を選ぶと編集フォームが開きます</div>
       </div>
-      <button class="x" data-close aria-label="閉じる"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+      <button class="ml-auto w-8 h-8 rounded-lg grid place-items-center text-cm-text3 cursor-pointer border-0 bg-transparent hover:bg-gray-50 hover:text-cm-text" data-close aria-label="閉じる">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
     </div>
-    <div class="modal-body">
-      <div class="picker-search">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        <input id="pickSearch" placeholder="物件名・住所で絞り込み…" oninput="filterPicker(this.value)">
+    <div class="px-[22px] py-5 overflow-y-auto">
+      <div class="relative mb-3.5">
+        <svg class="absolute left-[11px] top-1/2 -translate-y-1/2 text-cm-text3" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input class="h-10 pl-9 pr-3 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full placeholder:text-cm-text3" id="pickSearch" placeholder="物件名・住所で絞り込み…" oninput="filterPicker(this.value)">
       </div>
-      <div class="picker-list" id="pickList">
+      <div class="flex flex-col border border-cm-soft rounded-[10px] overflow-hidden max-h-[380px] overflow-y-auto" id="pickList">
         {{range .Properties}}
-        <a class="picker-row" href="/properties/{{.ID}}/edit"
+        <a class="flex items-center gap-3 px-3.5 py-3 border-b border-cm-soft cursor-pointer no-underline text-inherit hover:bg-[#FAFBFD] last:border-b-0" href="/properties/{{.ID}}/edit"
            data-name="{{.Name}}" data-addr="{{.Address}}">
-          <div class="p-thumb">{{buildingThumb .ID}}</div>
-          <div class="info">
-            <div class="n">{{.Name}}</div>
-            <div class="a">{{.Address}}{{if .UnitCount}} ・ {{derefInt .UnitCount}}戸{{end}}</div>
+          <div class="w-10 h-10 rounded-lg bg-[#E9ECF2] overflow-hidden flex-shrink-0">{{buildingThumb .ID}}</div>
+          <div class="flex-1 min-w-0">
+            <div class="font-bold text-[13.5px] text-cm-text">{{.Name}}</div>
+            <div class="text-cm-text3 text-[12px] mt-0.5">{{.Address}}{{if .UnitCount}} ・ {{derefInt .UnitCount}}戸{{end}}</div>
           </div>
-          <svg class="go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+          <svg class="text-cm-text3 flex-shrink-0 group-hover:text-cm-primary" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
         </a>
         {{else}}
-        <div class="picker-empty">登録されている物件がありません</div>
+        <div class="px-7 py-[30px] text-center text-cm-text3 text-[13px]">登録されている物件がありません</div>
         {{end}}
       </div>
     </div>
-    <div class="modal-foot">
-      <button class="btn" data-close type="button">閉じる</button>
+    <div class="px-[22px] py-3.5 border-t border-cm-soft flex items-center gap-2 justify-end bg-[#FAFBFD]">
+      <button class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-lg font-semibold text-[13.5px] cursor-pointer border border-cm-border bg-white text-cm-text hover:bg-gray-50" data-close type="button">閉じる</button>
     </div>
   </div>
 </div>
 
 <script>
-  function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
-  function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
-  document.querySelectorAll('.modal-overlay').forEach(o=>{
+  function openModal(id) {
+    const el = document.getElementById(id);
+    el.classList.remove('hidden');
+    el.classList.add('flex');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal(id) {
+    const el = document.getElementById(id);
+    el.classList.add('hidden');
+    el.classList.remove('flex');
+    document.body.style.overflow = '';
+  }
+  document.querySelectorAll('.hidden[id$="Modal"]').forEach(o=>{
     o.addEventListener('click',e=>{ if(e.target===o) closeModal(o.id); });
   });
   document.querySelectorAll('[data-close]').forEach(b=>{
-    b.addEventListener('click',()=>{ const m=b.closest('.modal-overlay'); if(m) closeModal(m.id); });
+    b.addEventListener('click',()=>{ const m=b.closest('[id$="Modal"]'); if(m) closeModal(m.id); });
   });
   document.addEventListener('keydown',e=>{
     if(e.key==='Escape'){
-      document.querySelectorAll('.modal-overlay.open').forEach(o=>closeModal(o.id));
-      document.getElementById('splitMenu').classList.remove('open');
+      ['formModal','pickModal'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el && !el.classList.contains('hidden')) closeModal(id);
+      });
+      document.getElementById('splitMenu').classList.add('hidden');
     }
   });
 
@@ -503,12 +422,12 @@
   const menu = document.getElementById('splitMenu');
   document.getElementById('openSplitMenu').addEventListener('click',e=>{
     e.stopPropagation();
-    menu.classList.toggle('open');
+    menu.classList.toggle('hidden');
   });
-  document.addEventListener('click',e=>{ if(!split.contains(e.target)) menu.classList.remove('open'); });
-  menu.querySelectorAll('.mi').forEach(mi=>{
+  document.addEventListener('click',e=>{ if(!split.contains(e.target)) menu.classList.add('hidden'); });
+  menu.querySelectorAll('[data-act]').forEach(mi=>{
     mi.addEventListener('click',()=>{
-      menu.classList.remove('open');
+      menu.classList.add('hidden');
       const act = mi.dataset.act;
       if(act==='register'){ openModal('formModal'); }
       else if(act==='edit'){ openModal('pickModal'); }
@@ -518,19 +437,29 @@
 
   function filterPicker(q){
     const ql = (q||'').toLowerCase();
-    document.querySelectorAll('#pickList .picker-row').forEach(r=>{
+    document.querySelectorAll('#pickList a[data-name]').forEach(r=>{
       const n = (r.dataset.name||'').toLowerCase();
       const a = (r.dataset.addr||'').toLowerCase();
       r.style.display = (!ql || n.includes(ql) || a.includes(ql)) ? '' : 'none';
     });
-    const empty = document.querySelector('#pickList .picker-empty');
+    const empty = document.querySelector('#pickList div');
     if(empty) empty.style.display = 'none';
   }
 
   document.querySelectorAll('.check-row[data-val]').forEach(r=>{
     r.addEventListener('click',()=>{
-      document.querySelectorAll('.check-row[data-val]').forEach(x=>x.querySelector('.cb').classList.remove('checked'));
-      r.querySelector('.cb').classList.add('checked');
+      document.querySelectorAll('.check-row[data-val]').forEach(x=>{
+        const cb = x.querySelector('.cb');
+        const chk = x.querySelector('svg');
+        cb.classList.remove('bg-cm-primary','border-cm-primary');
+        cb.classList.add('border-gray-300','bg-white');
+        if(chk) chk.classList.add('hidden');
+      });
+      const cb = r.querySelector('.cb');
+      const chk = r.querySelector('svg');
+      cb.classList.add('bg-cm-primary','border-cm-primary');
+      cb.classList.remove('border-gray-300','bg-white');
+      if(chk) chk.classList.remove('hidden');
       document.getElementById('statusInput').value = r.dataset.val;
     });
   });
@@ -538,8 +467,21 @@
   function clearFilter(){
     document.getElementById('filterForm').reset();
     document.getElementById('statusInput').value = '';
-    document.querySelectorAll('.check-row[data-val]').forEach(x=>x.querySelector('.cb').classList.remove('checked'));
-    document.querySelector('.check-row[data-val=""]').querySelector('.cb').classList.add('checked');
+    document.querySelectorAll('.check-row[data-val]').forEach(x=>{
+      const cb = x.querySelector('.cb');
+      const chk = x.querySelector('svg');
+      cb.classList.remove('bg-cm-primary','border-cm-primary');
+      cb.classList.add('border-gray-300','bg-white');
+      if(chk) chk.classList.add('hidden');
+    });
+    const firstRow = document.querySelector('.check-row[data-val=""]');
+    if(firstRow){
+      const cb = firstRow.querySelector('.cb');
+      const chk = firstRow.querySelector('svg');
+      cb.classList.add('bg-cm-primary','border-cm-primary');
+      cb.classList.remove('border-gray-300','bg-white');
+      if(chk) chk.classList.remove('hidden');
+    }
   }
 </script>
 </body>

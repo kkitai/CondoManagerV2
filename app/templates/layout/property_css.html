@@ -2,73 +2,32 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#F7F8FA;--surface:#FFFFFF;--border:#E6E8EE;--border-soft:#EEF0F4;
-    --text:#1F2430;--text-2:#4B5263;--text-3:#8A93A6;
-    --primary:#2F6BFF;--primary-600:#2456D9;--primary-50:#EAF1FF;
-    --green:#16A34A;--green-50:#E7F7ED;
-    --amber:#F59E0B;--amber-50:#FEF3DC;
-    --red:#E0383E;--red-50:#FCE9EA;
-    --blue-50:#EAF1FF;--slate-50:#F1F3F7;
-  }
-  *{box-sizing:border-box}
-  html,body{margin:0;padding:0}
-  body{font-family:"Noto Sans JP","Inter",system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-  button{font-family:inherit}
-  a{color:inherit;text-decoration:none}
-
-  .app{display:flex;min-height:100vh}
-  .sidebar{width:208px;flex-shrink:0;background:#fff;border-right:1px solid var(--border-soft);display:flex;flex-direction:column;padding:18px 14px}
-  .brand{display:flex;align-items:center;gap:10px;padding:6px 8px 22px}
-  .brand-mark{width:28px;height:28px;flex-shrink:0}
-  .brand-name{font-weight:700;font-size:18px;letter-spacing:-.01em;color:#1B2030}
-  .nav{display:flex;flex-direction:column;gap:2px;margin-top:6px}
-  .nav a{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;color:var(--text-2);font-weight:500;font-size:14px}
-  .nav a:hover{background:#F4F6FA;color:var(--text)}
-  .nav a.active{background:var(--primary-50);color:var(--primary);font-weight:600}
-  .nav a svg{width:18px;height:18px;flex-shrink:0;stroke-width:1.7}
-  .sidebar-foot{margin-top:auto;padding:14px 8px;color:var(--text-3);font-size:13px;display:flex;align-items:center;gap:8px}
-
-  .main{flex:1;min-width:0;display:flex;flex-direction:column}
-  .topbar{height:64px;background:#fff;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:18px;padding:0 28px}
-  .hamb{width:32px;height:32px;display:grid;place-items:center;border-radius:6px;color:var(--text-2);cursor:pointer}
-  .hamb:hover{background:#F4F6FA}
-  .crumbs{font-weight:600;color:var(--text);display:flex;align-items:center;gap:10px}
-  .crumbs .sep{color:var(--text-3)}
-  .crumbs .now{color:var(--text)}
-  .search{margin-left:auto;display:flex;align-items:center;gap:10px;width:380px;height:38px;background:#F4F6FA;border:1px solid transparent;border-radius:10px;padding:0 12px;color:var(--text-3)}
-  .search:focus-within{background:#fff;border-color:var(--border)}
-  .search input{flex:1;border:0;background:transparent;outline:none;font-size:13.5px;color:var(--text);font-family:inherit}
-  .search input::placeholder{color:var(--text-3)}
-  .kbd{font-family:"Inter",monospace;font-size:11px;color:var(--text-3);border:1px solid var(--border);padding:2px 6px;border-radius:5px;background:#fff}
-  .bell{position:relative;width:36px;height:36px;display:grid;place-items:center;border-radius:8px;color:var(--text-2);cursor:pointer}
-  .bell:hover{background:#F4F6FA}
-  .bell .dot-badge{position:absolute;top:4px;right:4px;background:var(--red);color:#fff;font-size:10px;font-weight:700;border-radius:999px;min-width:16px;height:16px;padding:0 4px;display:grid;place-items:center;border:2px solid #fff}
-  .me{display:flex;align-items:center;gap:10px;padding:4px 10px 4px 4px;border-radius:10px;cursor:pointer}
-  .me:hover{background:#F4F6FA}
-  .me img{width:34px;height:34px;border-radius:50%;object-fit:cover}
-  .me .nm{font-weight:700;font-size:13.5px}
-  .me .co{color:var(--text-3);font-size:11.5px}
-  .me-init{width:34px;height:34px;border-radius:50%;background:var(--primary-50);color:var(--primary);font-weight:700;font-size:13px;display:grid;place-items:center}
-  .chev{color:var(--text-3)}
-
-  .btn{display:inline-flex;align-items:center;gap:6px;height:38px;padding:0 14px;border-radius:8px;font-weight:600;font-size:13.5px;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text)}
-  .btn:hover{background:#F4F6FA}
-  .btn.icon{width:38px;padding:0;justify-content:center}
-  .btn.primary{background:var(--primary);border-color:var(--primary);color:#fff}
-  .btn.primary:hover{background:var(--primary-600);border-color:var(--primary-600)}
-
-  .pill{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;font-weight:600;font-size:12px;line-height:1.4}
-  .pill.green{background:var(--green-50);color:var(--green)}
-  .pill.amber{background:var(--amber-50);color:#B45309}
-  .pill.red{background:var(--red-50);color:var(--red)}
-  .pill.blue{background:var(--blue-50);color:var(--primary)}
-  .pill.slate{background:var(--slate-50);color:var(--text-2)}
-
-  .muted{color:var(--text-3)}
-  .num-mono{font-feature-settings:"tnum"}
-  .num-red{color:var(--red);font-weight:700}
-  .num-amber{color:var(--amber);font-weight:700}
-</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    fontFamily: { sans: ['"Noto Sans JP"', '"Inter"', 'system-ui', 'sans-serif'] },
+    extend: {
+      colors: {
+        'cm-bg':        '#F7F8FA',
+        'cm-border':    '#E6E8EE',
+        'cm-soft':      '#EEF0F4',
+        'cm-text':      '#1F2430',
+        'cm-text2':     '#4B5263',
+        'cm-text3':     '#8A93A6',
+        'cm-primary':   '#2F6BFF',
+        'cm-primary-d': '#2456D9',
+        'cm-primary-l': '#EAF1FF',
+        'cm-green':     '#16A34A',
+        'cm-green-l':   '#E7F7ED',
+        'cm-amber':     '#F59E0B',
+        'cm-amber-l':   '#FEF3DC',
+        'cm-red':       '#E0383E',
+        'cm-red-l':     '#FCE9EA',
+        'cm-slate':     '#F1F3F7',
+      },
+    },
+  },
+}
+</script>
 {{end}}

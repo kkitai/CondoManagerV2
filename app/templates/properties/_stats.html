@@ -1,37 +1,37 @@
-<div id="property-stats" style="font-family:'Noto Sans JP','Inter',system-ui,sans-serif">
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <span style="font-size:11px;color:#8A93A6">総数</span>
-      <span style="font-size:20px;font-weight:700">{{.TotalClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+<div id="property-stats" class="font-sans">
+  <div class="grid grid-cols-4 gap-2 mb-3.5">
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">総数</span>
+      <span class="text-[20px] font-bold text-cm-text">{{.TotalClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <span style="font-size:11px;color:#8A93A6">対応中</span>
-      <span style="font-size:20px;font-weight:700;color:#F59E0B">{{.InProgressClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">対応中</span>
+      <span class="text-[20px] font-bold text-cm-amber">{{.InProgressClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <span style="font-size:11px;color:#8A93A6">未対応</span>
-      <span style="font-size:20px;font-weight:700;color:#E0383E">{{.OpenClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">未対応</span>
+      <span class="text-[20px] font-bold text-cm-red">{{.OpenClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
     </div>
-    <div style="display:flex;flex-direction:column;gap:4px">
-      <span style="font-size:11px;color:#8A93A6">完了</span>
-      <span style="font-size:20px;font-weight:700;color:#16A34A">{{.CompletedClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">完了</span>
+      <span class="text-[20px] font-bold text-cm-green">{{.CompletedClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
     </div>
   </div>
 
   {{if .CategoryBreakdown}}
-  <div style="margin-top:10px">
-    <div style="font-size:12px;font-weight:700;color:#4B5263;margin-bottom:8px">カテゴリ別内訳</div>
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-cm-text2 mb-2">カテゴリ別内訳</div>
     {{range .CategoryBreakdown}}
-    <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-bottom:1px solid #EEF0F4">
-      <span style="color:#4B5263">{{.Category}}</span>
-      <span style="font-weight:600;color:#1F2430">{{.Count}}件</span>
+    <div class="flex justify-between text-[12.5px] py-1 border-b border-cm-soft">
+      <span class="text-cm-text2">{{.Category}}</span>
+      <span class="font-semibold text-cm-text">{{.Count}}件</span>
     </div>
     {{end}}
   </div>
   {{end}}
 
   {{if .AvgResponseDays}}
-  <div style="margin-top:10px;font-size:12.5px;color:#4B5263">
+  <div class="mt-2.5 text-[12.5px] text-cm-text2">
     平均対応日数: <strong>{{formatFloat1 (derefFloat64 .AvgResponseDays)}}日</strong>
     {{if .RecurrenceRate}}
     　再発率: <strong>{{formatFloat1 (mulFloat64 (derefFloat64 .RecurrenceRate) 100.0)}}%</strong>

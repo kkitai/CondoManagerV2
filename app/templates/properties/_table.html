@@ -1,29 +1,29 @@
 <tbody id="properties-table-body">
   {{range .Properties}}
-  <tr>
-    <td class="name-cell">
-      <div class="name-inner">
-        <div class="thumb">{{buildingThumb .ID}}</div>
-        <a href="/properties/{{.ID}}">{{.Name}}</a>
+  <tr class="hover:bg-[#FAFBFD]">
+    <td class="px-3 py-3.5 border-b border-cm-soft text-[13.5px] text-cm-text align-middle whitespace-nowrap">
+      <div class="flex items-center gap-3">
+        <div class="w-[42px] h-[42px] rounded-lg bg-[#E9ECF2] flex-shrink-0 overflow-hidden">{{buildingThumb .ID}}</div>
+        <a href="/properties/{{.ID}}" class="font-medium hover:text-cm-primary">{{.Name}}</a>
       </div>
     </td>
-    <td>{{.Address}}</td>
-    <td class="num-mono">{{if .UnitCount}}{{derefInt .UnitCount}}戸{{else}}<span class="muted">-</span>{{end}}</td>
-    <td>{{if .Assignee}}{{.Assignee.Name}}{{else}}<span class="muted">-</span>{{end}}</td>
-    <td>
+    <td class="px-3 py-3.5 border-b border-cm-soft text-[13.5px] text-cm-text align-middle whitespace-nowrap">{{.Address}}</td>
+    <td class="px-3 py-3.5 border-b border-cm-soft text-[13.5px] text-cm-text align-middle whitespace-nowrap font-[feature-settings:'tnum']">{{if .UnitCount}}{{derefInt .UnitCount}}戸{{else}}<span class="text-cm-text3">-</span>{{end}}</td>
+    <td class="px-3 py-3.5 border-b border-cm-soft text-[13.5px] text-cm-text align-middle whitespace-nowrap">{{if .Assignee}}{{.Assignee.Name}}{{else}}<span class="text-cm-text3">-</span>{{end}}</td>
+    <td class="px-3 py-3.5 border-b border-cm-soft text-[13.5px] text-cm-text align-middle whitespace-nowrap">
       {{if eq (string .Status) "active"}}
-        <span class="pill green">管理中</span>
+        <span class="inline-flex items-center px-2.5 py-[3px] rounded-full font-semibold text-xs bg-cm-green-l text-cm-green">管理中</span>
       {{else}}
-        <span class="pill slate">非管理</span>
+        <span class="inline-flex items-center px-2.5 py-[3px] rounded-full font-semibold text-xs bg-cm-slate text-cm-text2">非管理</span>
       {{end}}
     </td>
-    <td class="muted num-mono">{{formatDate .UpdatedAt}}</td>
-    <td>
-      <div class="actions">
-        <a href="/properties/{{.ID}}" class="iconbtn" title="詳細">
+    <td class="px-3 py-3.5 border-b border-cm-soft text-[13.5px] text-cm-text3 align-middle whitespace-nowrap font-[feature-settings:'tnum']">{{formatDate .UpdatedAt}}</td>
+    <td class="px-3 py-3.5 border-b border-cm-soft text-[13.5px] text-cm-text align-middle whitespace-nowrap">
+      <div class="flex items-center gap-1.5">
+        <a href="/properties/{{.ID}}" class="w-[30px] h-[30px] border border-cm-border bg-white rounded-md text-cm-text3 grid place-items-center cursor-pointer hover:text-cm-text hover:bg-gray-50 no-underline" title="詳細">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>
         </a>
-        <a href="/properties/{{.ID}}/edit" class="iconbtn" title="編集">
+        <a href="/properties/{{.ID}}/edit" class="w-[30px] h-[30px] border border-cm-border bg-white rounded-md text-cm-text3 grid place-items-center cursor-pointer hover:text-cm-text hover:bg-gray-50 no-underline" title="編集">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
         </a>
       </div>
@@ -31,7 +31,7 @@
   </tr>
   {{else}}
   <tr>
-    <td colspan="7" style="text-align:center;padding:40px;color:var(--text-3)">物件が見つかりません</td>
+    <td colspan="7" class="px-3 py-10 text-center text-cm-text3 text-[13px]">物件が見つかりません</td>
   </tr>
   {{end}}
 </tbody>
