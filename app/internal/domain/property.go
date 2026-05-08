@@ -46,6 +46,14 @@ type SeverityCount struct {
 	Count    int64
 }
 
+type PropertyListStats struct {
+	TotalCount    int64
+	ActiveCount   int64
+	InactiveCount int64
+	TotalUnits    int64
+	AvgUnits      float64
+}
+
 type PropertyListParams struct {
 	Search          string
 	Status          string

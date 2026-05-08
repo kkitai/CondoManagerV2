@@ -1,78 +1,415 @@
-{{define "title"}}{{.Property.Name}} — CondoManager{{end}}
+{{define "base"}}
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<title>{{.Property.Name}} — CondoManager</title>
+<meta name="viewport" content="width=1536"/>
+{{template "property_css" .}}
+<style>
+  .page{padding:22px 28px 60px;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:22px;align-items:start}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--primary);font-weight:500;font-size:13.5px;margin-bottom:10px;cursor:pointer}
+  .back:hover{color:var(--primary-600)}
+  .head{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+  .head h1{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .meta-row{display:flex;align-items:center;gap:14px;flex-wrap:wrap;color:var(--text-3);font-size:12.5px;margin-top:8px}
+  .meta-div{width:1px;height:12px;background:var(--border)}
+  .head-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
 
-{{define "content"}}
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <div class="flex items-center gap-4">
-      <a href="/properties" class="text-gray-400 hover:text-gray-600">← 一覧に戻る</a>
-      <h1 class="text-2xl font-bold text-gray-900">{{.Property.Name}}</h1>
-      {{if eq (string .Property.Status) "active"}}
-        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">有効</span>
-      {{else}}
-        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">無効</span>
-      {{end}}
+  .tabs{display:flex;gap:28px;border-bottom:1px solid var(--border-soft);margin:18px 0 18px}
+  .tab{padding:12px 2px;font-weight:600;color:var(--text-3);font-size:14px;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+  .tab:hover{color:var(--text-2)}
+  .tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+
+  .card{background:#fff;border:1px solid var(--border-soft);border-radius:12px;padding:20px 22px;box-shadow:0 1px 0 rgba(20,30,55,.02)}
+  .card+.card{margin-top:18px}
+  .card h2{font-size:15.5px;font-weight:700;margin:0 0 16px}
+
+  .basic{display:grid;grid-template-columns:280px 1fr 1fr;gap:24px;align-items:start}
+  .photo{width:100%;aspect-ratio:4/3;border-radius:8px;overflow:hidden;background:#E9ECF2}
+  .photo svg{width:100%;height:100%}
+  .kv{display:grid;grid-template-columns:104px 1fr;row-gap:14px;column-gap:12px;font-size:13.5px}
+  .kv .k{color:var(--text-3)}
+  .kv .v{color:var(--text)}
+  .v.red{color:var(--red);font-weight:600}
+  .v.amber{color:#B45309;font-weight:600}
+
+  .addr-grid{display:grid;grid-template-columns:1fr 1.05fr;gap:24px;align-items:start}
+  .map{aspect-ratio:16/8.6;border-radius:8px;overflow:hidden;border:1px solid var(--border-soft);background:#EEF1F4;position:relative}
+  .pin{position:absolute;left:50%;top:50%;transform:translate(-50%,-100%);width:30px;height:38px}
+
+  .eq{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  .eq-card{background:#fff;border:1px solid var(--border-soft);border-radius:10px;padding:16px 16px 18px;display:flex;align-items:flex-start;gap:14px}
+  .eq-ico{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+  .eq .lbl{font-size:12px;color:var(--text-3);margin-bottom:4px}
+  .eq .num{font-size:22px;font-weight:700;letter-spacing:-.01em}
+  .eq .num .u{font-size:13px;color:var(--text-2);font-weight:600;margin-left:2px}
+
+  .rail{display:flex;flex-direction:column;gap:18px;position:sticky;top:14px}
+  .rail .card{padding:18px}
+  .rail h2{display:flex;align-items:center;justify-content:space-between;font-size:14px;margin:0 0 14px}
+  .rail .more{font-size:12.5px;color:var(--primary);font-weight:600;cursor:pointer}
+
+  .stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .stats4 .s{display:flex;flex-direction:column;gap:4px}
+  .stats4 .s .lab{font-size:11px;color:var(--text-3)}
+  .stats4 .s .num{font-size:20px;font-weight:700;letter-spacing:-.01em}
+  .stats4 .s .num .u{font-size:11px;font-weight:600;margin-left:1px}
+  .num.amber{color:var(--amber)}
+  .num.red{color:var(--red)}
+  .num.green{color:var(--green)}
+
+  .donut-row{display:grid;grid-template-columns:104px 1fr;align-items:center;gap:10px}
+  .legend{display:flex;flex-direction:column;gap:8px;font-size:12px}
+  .legend .li{display:grid;grid-template-columns:10px 1fr auto;align-items:center;gap:7px}
+  .legend .sw{width:9px;height:9px;border-radius:2px}
+  .legend .nm{color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .legend .vl{color:var(--text-3);font-feature-settings:"tnum";white-space:nowrap}
+
+  .donut-wrap{position:relative;width:104px;height:104px}
+  .donut-wrap .ctr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .donut-wrap .ctr .b{font-size:18px;font-weight:700}
+  .donut-wrap .ctr .s{font-size:10.5px;color:var(--text-3)}
+
+  .owner-row{display:flex;align-items:flex-start;gap:12px}
+  .owner-init{width:48px;height:48px;border-radius:50%;background:var(--primary-50);color:var(--primary);font-weight:700;font-size:16px;display:grid;place-items:center;flex-shrink:0}
+  .owner-nm{font-weight:700;font-size:14.5px;display:flex;align-items:center;gap:8px}
+  .owner-co{color:var(--text-3);font-size:12.5px;margin-top:2px}
+  .contact{margin-top:14px;display:flex;flex-direction:column;gap:8px;font-size:12.5px;color:var(--text-2)}
+  .contact .li{display:flex;align-items:center;gap:8px}
+  .contact .li svg{color:var(--text-3)}
+
+  .tab-pane{display:none}
+  .tab-pane.active{display:block}
+  .empty{border:1px dashed var(--border);border-radius:12px;padding:60px 20px;text-align:center;color:var(--text-3);background:#fff}
+</style>
+<script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+</head>
+<body>
+<div class="app">
+
+{{template "property_sidebar" .}}
+
+<div class="main">
+  <header class="topbar">
+    <div class="hamb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></div>
+    <div class="crumbs">
+      <a href="/properties">物件管理</a>
+      <svg class="sep" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+      <span class="now">物件詳細</span>
     </div>
-    <div class="flex gap-2">
-      <a href="/properties/{{.Property.ID}}/edit"
-        class="px-4 py-2 bg-white border border-gray-300 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-        編集
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="物件名、住所、管理会社名を検索…"/>
+      <span class="kbd">⌘K</span>
+    </div>
+    <div class="bell">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+    </div>
+    {{if .CurrentUser}}
+    <div class="me">
+      <div class="me-init">{{slice (.CurrentUser.Name) 0 1}}</div>
+      <div><div class="nm">{{.CurrentUser.Name}}</div></div>
+      <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    {{end}}
+  </header>
+
+  <div class="page">
+    <!-- LEFT -->
+    <div>
+      <a class="back" href="/properties">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
+        一覧に戻る
       </a>
-      <button
-        hx-delete="/properties/{{.Property.ID}}"
-        hx-confirm="この物件を削除しますか？削除後は一覧に戻ります。"
-        hx-push-url="/properties"
-        class="px-4 py-2 bg-red-50 border border-red-300 rounded-md text-sm text-red-700 hover:bg-red-100">
-        削除
-      </button>
-    </div>
-  </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-    <div class="bg-white shadow rounded-lg p-6 space-y-4">
-      <h2 class="text-lg font-semibold text-gray-900">基本情報</h2>
-      <dl class="space-y-3">
+      <div class="head">
         <div>
-          <dt class="text-xs text-gray-500">住所</dt>
-          <dd class="text-sm text-gray-900 mt-0.5">{{.Property.Address}}</dd>
-        </div>
-        <div class="grid grid-cols-2 gap-4">
-          <div>
-            <dt class="text-xs text-gray-500">面積</dt>
-            <dd class="text-sm text-gray-900 mt-0.5">
-              {{if .Property.Area}}{{printf "%.2f" (derefFloat64 .Property.Area)}} ㎡{{else}}—{{end}}
-            </dd>
-          </div>
-          <div>
-            <dt class="text-xs text-gray-500">戸数</dt>
-            <dd class="text-sm text-gray-900 mt-0.5">
-              {{if .Property.UnitCount}}{{derefInt .Property.UnitCount}} 戸{{else}}—{{end}}
-            </dd>
+          <h1>{{.Property.Name}}</h1>
+          <div class="meta-row">
+            {{if eq (string .Property.Status) "active"}}
+              <span class="pill green">管理中</span>
+            {{else}}
+              <span class="pill slate">非管理</span>
+            {{end}}
+            <span>ID: {{.Property.ID}}</span>
+            <span class="meta-div"></span>
+            <span>登録日: {{formatDate .Property.CreatedAt}}</span>
+            <span class="meta-div"></span>
+            <span>最終更新: {{formatDate .Property.UpdatedAt}}</span>
           </div>
         </div>
-        <div>
-          <dt class="text-xs text-gray-500">管理会社</dt>
-          <dd class="text-sm text-gray-900 mt-0.5">
-            {{if .Property.ManagementCompany}}{{deref .Property.ManagementCompany}}{{else}}—{{end}}
-          </dd>
+        <div class="head-actions">
+          <a href="/properties/{{.Property.ID}}/edit" class="btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
+            編集
+          </a>
+          <button class="btn icon" aria-label="more">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+          </button>
         </div>
-        <div>
-          <dt class="text-xs text-gray-500">作成日</dt>
-          <dd class="text-sm text-gray-900 mt-0.5">{{formatDate .Property.CreatedAt}}</dd>
-        </div>
-        <div>
-          <dt class="text-xs text-gray-500">最終更新</dt>
-          <dd class="text-sm text-gray-900 mt-0.5">{{formatDate .Property.UpdatedAt}}</dd>
-        </div>
-      </dl>
+      </div>
+
+      <div class="tabs" id="tabs">
+        <div class="tab active" data-tab="basic">基本情報</div>
+        <div class="tab" data-tab="claims">クレームサマリー</div>
+        <div class="tab" data-tab="equip">設備・点検</div>
+        <div class="tab" data-tab="contact">連絡先・担当者</div>
+        <div class="tab" data-tab="files">関連ファイル</div>
+        <div class="tab" data-tab="history">履歴</div>
+      </div>
+
+      <!-- BASIC TAB -->
+      <div class="tab-pane active" data-pane="basic">
+
+        <section class="card">
+          <h2>基本情報</h2>
+          <div class="basic">
+            <div class="photo">
+              <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#CFE0EE"/><stop offset="1" stop-color="#E9EFF4"/>
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="300" fill="url(#sky)"/>
+                <rect x="0" y="120" width="80" height="180" fill="#B7C2CD"/>
+                <rect x="320" y="100" width="90" height="200" fill="#B7C2CD"/>
+                <rect x="90" y="60" width="220" height="240" fill="#F2F4F7" stroke="#9AA4B0"/>
+                <g fill="#3D4756">
+                  <g><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,32)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,64)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,96)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,128)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                </g>
+                <rect x="180" y="248" width="40" height="52" fill="#3D4756"/>
+              </svg>
+            </div>
+
+            <div class="kv">
+              <div class="k">物件名</div><div class="v">{{.Property.Name}}</div>
+              <div class="k">所在地</div><div class="v">{{.Property.Address}}</div>
+              <div class="k">総戸数</div><div class="v">{{if .Property.UnitCount}}{{derefInt .Property.UnitCount}}戸{{else}}-{{end}}</div>
+              <div class="k">延床面積</div><div class="v">{{if .Property.Area}}{{printf "%.2f" (derefFloat64 .Property.Area)}}㎡{{else}}-{{end}}</div>
+              <div class="k">管理会社</div><div class="v">{{if .Property.ManagementCompany}}{{deref .Property.ManagementCompany}}{{else}}-{{end}}</div>
+              <div class="k">登録日</div><div class="v">{{formatDate .Property.CreatedAt}}</div>
+            </div>
+
+            <div class="kv">
+              <div class="k">ステータス</div>
+              <div class="v">
+                {{if eq (string .Property.Status) "active"}}
+                  <span class="pill green">管理中</span>
+                {{else}}
+                  <span class="pill slate">非管理</span>
+                {{end}}
+              </div>
+              {{with .Stats}}
+              <div class="k">総クレーム数</div><div class="v">{{.TotalClaims}}件</div>
+              <div class="k">未対応</div><div class="v{{if gt .OpenClaims 0}} red{{end}}">{{.OpenClaims}}件</div>
+              <div class="k">対応中</div><div class="v{{if gt .InProgressClaims 0}} amber{{end}}">{{.InProgressClaims}}件</div>
+              <div class="k">完了</div><div class="v">{{.CompletedClaims}}件</div>
+              <div class="k">平均対応日数</div><div class="v">{{if .AvgResponseDays}}{{formatFloat1 (derefFloat64 .AvgResponseDays)}}日{{else}}-{{end}}</div>
+              {{end}}
+              <div class="k">最終更新</div><div class="v">{{formatDate .Property.UpdatedAt}}</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>住所・地図</h2>
+          <div class="addr-grid">
+            <div class="kv" style="grid-template-columns:80px 1fr">
+              <div class="k">住所</div><div class="v">{{.Property.Address}}</div>
+              <div class="k">備考</div><div class="v muted">-</div>
+            </div>
+            <div class="map">
+              <svg viewBox="0 0 600 320" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
+                <rect width="600" height="320" fill="#EEF2F0"/>
+                <g fill="#F7FAF7" stroke="#D9DEDB">
+                  <rect x="30" y="20" width="170" height="110"/><rect x="220" y="20" width="160" height="110"/>
+                  <rect x="400" y="20" width="170" height="110"/><rect x="30" y="150" width="170" height="150"/>
+                  <rect x="220" y="150" width="160" height="150"/><rect x="400" y="150" width="170" height="150"/>
+                </g>
+                <g stroke="#fff" stroke-width="14">
+                  <line x1="0" y1="140" x2="600" y2="140"/>
+                  <line x1="210" y1="0" x2="210" y2="320"/>
+                  <line x1="390" y1="0" x2="390" y2="320"/>
+                </g>
+                <g fill="#7A8390" font-family="Inter" font-size="10">
+                  <text x="50" y="78">エリア</text>
+                  <text x="240" y="78">周辺施設</text>
+                  <text x="420" y="78">主要道路</text>
+                </g>
+              </svg>
+              <svg class="pin" viewBox="0 0 30 38">
+                <path d="M15 0c8.3 0 15 6.7 15 15 0 11-15 23-15 23S0 26 0 15C0 6.7 6.7 0 15 0Z" fill="#2F6BFF"/>
+                <circle cx="15" cy="15" r="5.5" fill="#fff"/>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>建物・設備サマリー</h2>
+          <div class="eq">
+            <div class="eq-card">
+              <div class="eq-ico" style="background:#EEF1F7;color:#5D6B83">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 9h16M9 4v16"/></svg>
+              </div>
+              <div><div class="lbl">総クレーム数</div><div class="num">{{if .Stats}}{{.Stats.TotalClaims}}<span class="u">件</span>{{else}}0<span class="u">件</span>{{end}}</div></div>
+            </div>
+            <div class="eq-card">
+              <div class="eq-ico" style="background:#FEF3DC;color:#B45309">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 10v5M12 18h.01"/></svg>
+              </div>
+              <div><div class="lbl">未対応クレーム</div><div class="num">{{if .Stats}}{{.Stats.OpenClaims}}<span class="u">件</span>{{else}}0<span class="u">件</span>{{end}}</div></div>
+            </div>
+            <div class="eq-card">
+              <div class="eq-ico" style="background:#E7F7ED;color:#16A34A">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
+              </div>
+              <div><div class="lbl">完了クレーム</div><div class="num">{{if .Stats}}{{.Stats.CompletedClaims}}<span class="u">件</span>{{else}}0<span class="u">件</span>{{end}}</div></div>
+            </div>
+            <div class="eq-card">
+              <div class="eq-ico" style="background:#EAF1FF;color:#2F6BFF">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+              </div>
+              <div><div class="lbl">平均対応日数</div><div class="num">{{if and .Stats .Stats.AvgResponseDays}}{{formatFloat1 (derefFloat64 .Stats.AvgResponseDays)}}<span class="u">日</span>{{else}}-{{end}}</div></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Other tabs -->
+      <div class="tab-pane" data-pane="claims"><div class="empty">クレームサマリー — 右ペインのクレームサマリーをご参照ください。</div></div>
+      <div class="tab-pane" data-pane="equip"><div class="empty">設備・点検タブ（準備中）</div></div>
+      <div class="tab-pane" data-pane="contact"><div class="empty">連絡先・担当者タブ（準備中）</div></div>
+      <div class="tab-pane" data-pane="files"><div class="empty">関連ファイルタブ（準備中）</div></div>
+      <div class="tab-pane" data-pane="history"><div class="empty">履歴タブ（準備中）</div></div>
     </div>
 
-    <div class="bg-white shadow rounded-lg p-6 space-y-4"
-      hx-get="/properties/{{.Property.ID}}?partial=stats"
-      hx-trigger="load"
-      hx-swap="innerHTML">
-      <h2 class="text-lg font-semibold text-gray-900">クレーム統計</h2>
-      {{template "_stats.html" .Stats}}
-    </div>
+    <!-- RIGHT RAIL -->
+    <aside class="rail">
+
+      <section class="card">
+        <h2>クレームサマリー<span class="more">詳細を見る</span></h2>
+        {{with .Stats}}
+        <div class="stats4">
+          <div class="s"><span class="lab">総数</span><span class="num num-mono">{{.TotalClaims}}<span class="u">件</span></span></div>
+          <div class="s"><span class="lab">対応中</span><span class="num num-mono amber">{{.InProgressClaims}}<span class="u">件</span></span></div>
+          <div class="s"><span class="lab">未対応</span><span class="num num-mono red">{{.OpenClaims}}<span class="u">件</span></span></div>
+          <div class="s"><span class="lab">完了</span><span class="num num-mono green">{{.CompletedClaims}}<span class="u">件</span></span></div>
+        </div>
+        {{else}}
+        <div class="stats4">
+          <div class="s"><span class="lab">総数</span><span class="num num-mono">0<span class="u">件</span></span></div>
+          <div class="s"><span class="lab">対応中</span><span class="num num-mono amber">0<span class="u">件</span></span></div>
+          <div class="s"><span class="lab">未対応</span><span class="num num-mono red">0<span class="u">件</span></span></div>
+          <div class="s"><span class="lab">完了</span><span class="num num-mono green">0<span class="u">件</span></span></div>
+        </div>
+        {{end}}
+      </section>
+
+      {{with .Stats}}
+      {{if .CategoryBreakdown}}
+      <section class="card">
+        <h2>カテゴリ別内訳<span class="more">詳細を見る</span></h2>
+        <div class="donut-row">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 42 42" width="104" height="104" id="catDonut">
+              <circle cx="21" cy="21" r="15.915" fill="none" stroke="#F0F2F6" stroke-width="6"/>
+            </svg>
+          </div>
+          <div class="legend" id="catLegend"></div>
+        </div>
+      </section>
+      {{end}}
+
+      {{if .SeverityBreakdown}}
+      <section class="card">
+        <h2>重要度別件数<span class="more">詳細を見る</span></h2>
+        <div class="donut-row">
+          <div class="donut-wrap">
+            <svg viewBox="0 0 42 42" width="104" height="104" id="sevDonut">
+              <circle cx="21" cy="21" r="15.915" fill="none" stroke="#F0F2F6" stroke-width="6"/>
+            </svg>
+            <div class="ctr"><div class="b">{{.TotalClaims}}件</div><div class="s">総数</div></div>
+          </div>
+          <div class="legend" id="sevLegend"></div>
+        </div>
+      </section>
+      {{end}}
+      {{end}}
+
+      {{with .Property.Assignee}}
+      <section class="card">
+        <h2>担当者情報<span class="more"><a href="/properties/{{$.Property.ID}}/edit" style="color:inherit">編集</a></span></h2>
+        <div class="muted" style="font-size:12.5px;margin-bottom:8px">担当者</div>
+        <div class="owner-row">
+          <div class="owner-init">{{slice .Name 0 1}}</div>
+          <div>
+            <div class="owner-nm">{{.Name}} <span class="pill blue">物件担当</span></div>
+            <div class="owner-co">{{.Email}}</div>
+          </div>
+        </div>
+      </section>
+      {{end}}
+
+    </aside>
   </div>
 </div>
+</div>
+
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll('#tabs .tab');
+  const panes = document.querySelectorAll('.tab-pane');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => x.classList.toggle('active', x === t));
+    const id = t.dataset.tab;
+    panes.forEach(p => p.classList.toggle('active', p.dataset.pane === id));
+  }));
+
+  // Donut chart renderer
+  function renderDonut(svgId, legendId, data, colors) {
+    const svg = document.getElementById(svgId);
+    const legend = document.getElementById(legendId);
+    if (!svg || !legend || !data.length) return;
+    const total = data.reduce((s, d) => s + d.count, 0);
+    if (total === 0) return;
+    let offset = 25;
+    data.forEach((d, i) => {
+      const pct = d.count / total * 100;
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', '21'); c.setAttribute('cy', '21'); c.setAttribute('r', '15.915');
+      c.setAttribute('fill', 'none'); c.setAttribute('stroke', colors[i % colors.length]);
+      c.setAttribute('stroke-width', '6');
+      c.setAttribute('stroke-dasharray', pct + ' ' + (100 - pct));
+      c.setAttribute('stroke-dashoffset', offset);
+      c.setAttribute('transform', 'rotate(-90 21 21)');
+      svg.appendChild(c);
+      offset -= pct;
+      const pctStr = Math.round(pct) + '%';
+      legend.innerHTML += `<div class="li"><span class="sw" style="background:${colors[i % colors.length]}"></span><span class="nm">${d.label}</span><span class="vl">${pctStr} (${d.count}件)</span></div>`;
+    });
+  }
+
+  {{with .Stats}}
+  {{if .CategoryBreakdown}}
+  renderDonut('catDonut', 'catLegend', [
+    {{range .CategoryBreakdown}}{label: {{.Category | js}}, count: {{.Count}}},{{end}}
+  ], ['#2F6BFF','#7AA6FF','#3FBF8A','#A6BBE8','#D6DCE5','#F59E0B']);
+  {{end}}
+  {{if .SeverityBreakdown}}
+  const sevColors = {'high':'#E0383E','中':'#F59E0B','low':'#FBE4B8','高':'#E0383E','低':'#FBE4B8'};
+  renderDonut('sevDonut', 'sevLegend', [
+    {{range .SeverityBreakdown}}{label: {{.Severity | js}}, count: {{.Count}}},{{end}}
+  ], ['#E0383E','#F59E0B','#FBE4B8']);
+  {{end}}
+  {{end}}
+</script>
+</body>
+</html>
 {{end}}

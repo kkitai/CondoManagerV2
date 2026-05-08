@@ -1,61 +1,41 @@
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="property-stats">
-  <div class="bg-white shadow rounded-lg p-4 text-center">
-    <p class="text-2xl font-bold text-gray-900">{{.TotalClaims}}</p>
-    <p class="text-xs text-gray-500 mt-1">クレーム総数</p>
+<div id="property-stats" style="font-family:'Noto Sans JP','Inter',system-ui,sans-serif">
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:11px;color:#8A93A6">総数</span>
+      <span style="font-size:20px;font-weight:700">{{.TotalClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:11px;color:#8A93A6">対応中</span>
+      <span style="font-size:20px;font-weight:700;color:#F59E0B">{{.InProgressClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:11px;color:#8A93A6">未対応</span>
+      <span style="font-size:20px;font-weight:700;color:#E0383E">{{.OpenClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span style="font-size:11px;color:#8A93A6">完了</span>
+      <span style="font-size:20px;font-weight:700;color:#16A34A">{{.CompletedClaims}}<span style="font-size:11px;font-weight:600;margin-left:1px">件</span></span>
+    </div>
   </div>
-  <div class="bg-white shadow rounded-lg p-4 text-center">
-    <p class="text-2xl font-bold text-yellow-600">{{.OpenClaims}}</p>
-    <p class="text-xs text-gray-500 mt-1">未対応</p>
-  </div>
-  <div class="bg-white shadow rounded-lg p-4 text-center">
-    <p class="text-2xl font-bold text-blue-600">{{.InProgressClaims}}</p>
-    <p class="text-xs text-gray-500 mt-1">対応中</p>
-  </div>
-  <div class="bg-white shadow rounded-lg p-4 text-center">
-    <p class="text-2xl font-bold text-green-600">{{.CompletedClaims}}</p>
-    <p class="text-xs text-gray-500 mt-1">完了</p>
-  </div>
-</div>
 
-{{if .CategoryBreakdown}}
-<div class="mt-4">
-  <h3 class="text-sm font-medium text-gray-700 mb-2">カテゴリ別内訳</h3>
-  <div class="space-y-1">
+  {{if .CategoryBreakdown}}
+  <div style="margin-top:10px">
+    <div style="font-size:12px;font-weight:700;color:#4B5263;margin-bottom:8px">カテゴリ別内訳</div>
     {{range .CategoryBreakdown}}
-    <div class="flex items-center justify-between text-sm">
-      <span class="text-gray-600">{{.Category}}</span>
-      <span class="font-medium text-gray-900">{{.Count}} 件</span>
+    <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:4px 0;border-bottom:1px solid #EEF0F4">
+      <span style="color:#4B5263">{{.Category}}</span>
+      <span style="font-weight:600;color:#1F2430">{{.Count}}件</span>
     </div>
     {{end}}
   </div>
-</div>
-{{end}}
+  {{end}}
 
-{{if .SeverityBreakdown}}
-<div class="mt-4">
-  <h3 class="text-sm font-medium text-gray-700 mb-2">重篤度別内訳</h3>
-  <div class="space-y-1">
-    {{range .SeverityBreakdown}}
-    <div class="flex items-center justify-between text-sm">
-      <span class="text-gray-600">{{.Severity}}</span>
-      <span class="font-medium text-gray-900">{{.Count}} 件</span>
-    </div>
+  {{if .AvgResponseDays}}
+  <div style="margin-top:10px;font-size:12.5px;color:#4B5263">
+    平均対応日数: <strong>{{formatFloat1 (derefFloat64 .AvgResponseDays)}}日</strong>
+    {{if .RecurrenceRate}}
+    　再発率: <strong>{{formatFloat1 (mulFloat64 (derefFloat64 .RecurrenceRate) 100.0)}}%</strong>
     {{end}}
-  </div>
-</div>
-{{end}}
-
-{{if .AvgResponseDays}}
-<div class="mt-4 flex gap-6 text-sm">
-  <div>
-    <span class="text-gray-500">平均対応日数:</span>
-    <span class="font-medium text-gray-900 ml-1">{{printf "%.1f" (derefFloat64 .AvgResponseDays)}} 日</span>
-  </div>
-  {{if .RecurrenceRate}}
-  <div>
-    <span class="text-gray-500">再発率:</span>
-    <span class="font-medium text-gray-900 ml-1">{{printf "%.1f" (mulFloat64 (derefFloat64 .RecurrenceRate) 100.0)}}%</span>
   </div>
   {{end}}
 </div>
-{{end}}

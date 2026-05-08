@@ -1,83 +1,547 @@
-{{define "title"}}物件管理 — CondoManager{{end}}
+{{define "base"}}
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<title>物件管理 — CondoManager</title>
+<meta name="viewport" content="width=1536"/>
+{{template "property_css" .}}
+<style>
+  .page{padding:22px 28px 60px}
+  .page-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:20px}
+  .page-head h1{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:0}
+  .page-head .sub{color:var(--text-3);font-size:13px;margin-top:6px}
+  .head-actions{margin-left:auto;display:flex;align-items:center;gap:0}
+  .split{display:flex;align-items:stretch;position:relative}
+  .split .btn.primary{border-radius:8px 0 0 8px;padding-right:12px}
+  .split .split-chev{background:var(--primary);border:1px solid var(--primary);border-left:1px solid rgba(255,255,255,.25);color:#fff;border-radius:0 8px 8px 0;width:32px;display:grid;place-items:center;cursor:pointer}
+  .split .split-chev:hover{background:var(--primary-600)}
+  .menu{position:absolute;top:calc(100% + 6px);right:0;min-width:240px;background:#fff;border:1px solid var(--border);border-radius:10px;box-shadow:0 12px 28px -8px rgba(20,30,55,.18),0 4px 8px -2px rgba(20,30,55,.08);padding:6px;z-index:60;display:none}
+  .menu.open{display:block}
+  .menu .mi{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;color:var(--text)}
+  .menu .mi:hover{background:#F4F6FA}
+  .menu .mi svg{color:var(--text-3);margin-top:1px;flex-shrink:0}
+  .menu .mi .t{font-weight:600;font-size:13.5px;line-height:1.3}
+  .menu .mi .d{color:var(--text-3);font-size:11.5px;margin-top:2px;line-height:1.4}
+  .menu .sep{height:1px;background:var(--border-soft);margin:4px 2px}
 
-{{define "content"}}
-<div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <h1 class="text-2xl font-bold text-gray-900">物件管理</h1>
-    <div class="flex gap-2">
-      <a href="/properties/export?search={{.Query.Search}}&status={{.Query.Status}}"
-        class="px-4 py-2 bg-green-50 hover:bg-green-100 border border-green-300 rounded text-sm text-green-700">
-        CSV出力
-      </a>
-      <a href="/properties/new"
-        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-        + 物件追加
-      </a>
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:20px}
+  .kpi{background:#fff;border:1px solid var(--border-soft);border-radius:12px;padding:16px 18px;display:flex;align-items:flex-start;gap:14px;box-shadow:0 1px 0 rgba(20,30,55,.02)}
+  .kpi-ico{width:36px;height:36px;border-radius:8px;display:grid;place-items:center;flex-shrink:0}
+  .kpi .lbl{font-size:12px;color:var(--text-3);margin-bottom:4px}
+  .kpi .num{font-size:24px;font-weight:700;letter-spacing:-.01em;line-height:1.1;white-space:nowrap}
+  .kpi .num .u{font-size:13px;color:var(--text-2);font-weight:600;margin-left:2px}
+  .kpi .sub{font-size:11.5px;color:var(--text-3);margin-top:4px}
+
+  .grid{display:grid;grid-template-columns:minmax(0,1fr) 240px;gap:16px;align-items:start}
+  .listcard{background:#fff;border:1px solid var(--border-soft);border-radius:12px;box-shadow:0 1px 0 rgba(20,30,55,.02)}
+  .toolbar{display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border-soft)}
+  .toolbar .count{color:var(--text-3);font-size:13px}
+  .toolbar .right{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+  table{width:100%;border-collapse:collapse}
+  thead th{font-size:12px;font-weight:600;color:var(--text-3);text-align:left;padding:12px;background:#FAFBFD;border-bottom:1px solid var(--border-soft);white-space:nowrap}
+  tbody td{padding:14px 12px;border-bottom:1px solid var(--border-soft);font-size:13.5px;color:var(--text);vertical-align:middle;white-space:nowrap}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:#FAFBFD}
+  .actions{display:flex;align-items:center;gap:6px}
+  .iconbtn{width:30px;height:30px;border:1px solid var(--border);background:#fff;border-radius:6px;color:var(--text-3);display:grid;place-items:center;cursor:pointer;text-decoration:none}
+  .iconbtn:hover{color:var(--text);background:#F4F6FA}
+
+  .pager{display:flex;align-items:center;justify-content:center;gap:6px;padding:16px}
+  .pg{min-width:32px;height:32px;padding:0 10px;border:1px solid var(--border);background:#fff;border-radius:6px;font-size:13px;color:var(--text-2);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+  .pg:hover{background:#F4F6FA}
+  .pg.active{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:700}
+  .pg.icon{padding:0;width:32px;color:var(--text-3);border:1px solid var(--border)}
+  .pg.disabled{opacity:.4;pointer-events:none}
+
+  .filter{background:#fff;border:1px solid var(--border-soft);border-radius:12px;padding:18px;box-shadow:0 1px 0 rgba(20,30,55,.02);position:sticky;top:14px}
+  .filter h3{font-size:14px;font-weight:700;margin:0 0 14px}
+  .fgroup{margin-bottom:18px}
+  .fgroup .lab{font-size:12.5px;color:var(--text-2);font-weight:600;margin-bottom:8px}
+  .check-row{display:flex;align-items:center;justify-content:space-between;padding:6px 0;font-size:13px;color:var(--text-2);cursor:pointer}
+  .check-row .left{display:flex;align-items:center;gap:10px}
+  .check-row .ct{color:var(--text-3);font-size:12px;font-feature-settings:"tnum"}
+  .cb{width:16px;height:16px;border:1.5px solid #C8CDD7;border-radius:4px;display:grid;place-items:center;flex-shrink:0;background:#fff}
+  .cb.checked{background:var(--primary);border-color:var(--primary)}
+  .cb.checked svg{display:block}
+  .cb svg{display:none;color:#fff}
+  .fdrop{display:flex;align-items:center;justify-content:space-between;width:100%;height:36px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text-2);cursor:pointer}
+  .fdrop:hover{background:#F9FAFC}
+  .frange{display:flex;align-items:center;gap:8px}
+  .frange input{flex:1;min-width:0;height:36px;padding:0 10px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text);font-family:inherit;outline:none}
+  .frange input::placeholder{color:var(--text-3)}
+  .fdate{position:relative;flex:1}
+  .fdate input{width:100%;height:36px;padding:0 28px 0 10px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13px;color:var(--text);font-family:inherit;outline:none}
+  .fdate .ico{position:absolute;right:8px;top:50%;transform:translateY(-50%);color:var(--text-3);pointer-events:none}
+  .filter .foot{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;margin-top:14px}
+  .btn-clear{height:38px;border:1px solid var(--border);background:#fff;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--text-2);cursor:pointer;width:100%}
+  .btn-clear:hover{background:#F4F6FA}
+  .btn-apply{height:38px;border:1px solid var(--primary);background:var(--primary);color:#fff;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer;width:100%}
+  .btn-apply:hover{background:var(--primary-600);border-color:var(--primary-600)}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,30,55,.42);display:none;align-items:flex-start;justify-content:center;z-index:100;overflow-y:auto;padding:48px 20px}
+  .modal-overlay.open{display:flex}
+  .modal{width:100%;max-width:760px;background:#fff;border-radius:14px;box-shadow:0 24px 60px -12px rgba(20,30,55,.28);display:flex;flex-direction:column;max-height:calc(100vh - 96px);overflow:hidden}
+  .modal-sm{max-width:560px}
+  .modal-head{padding:18px 22px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:12px}
+  .modal-head h2{margin:0;font-size:17px;font-weight:700}
+  .modal-head .x{margin-left:auto;width:32px;height:32px;border-radius:8px;display:grid;place-items:center;color:var(--text-3);cursor:pointer;border:0;background:transparent}
+  .modal-head .x:hover{background:#F4F6FA;color:var(--text)}
+  .modal-head .sub{color:var(--text-3);font-size:12.5px;margin-top:3px}
+  .modal-body{padding:20px 22px;overflow-y:auto}
+  .modal-foot{padding:14px 22px;border-top:1px solid var(--border-soft);display:flex;align-items:center;gap:8px;justify-content:flex-end;background:#FAFBFD}
+
+  .form-section{margin-bottom:22px}
+  .form-section:last-child{margin-bottom:0}
+  .form-section h3{font-size:13px;font-weight:700;color:var(--text-2);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--border-soft);display:flex;align-items:center;gap:8px}
+  .form-section h3 .step{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--primary-50);color:var(--primary);font-size:11px;font-weight:700}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:12.5px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:6px}
+  .field label .req{color:var(--red);font-size:11px;font-weight:700}
+  .field input,.field select,.field textarea{height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13.5px;color:var(--text);font-family:inherit;outline:none;width:100%}
+  .field textarea{height:auto;padding:10px 12px;min-height:72px;resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(47,107,255,.12)}
+  .field input::placeholder,.field textarea::placeholder{color:var(--text-3)}
+  .field .hint{font-size:11.5px;color:var(--text-3)}
+  .field .err{font-size:11.5px;color:var(--red)}
+  .field select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A93A6' stroke-width='2'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+  .input-suffix{position:relative}
+  .input-suffix .suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:12.5px;pointer-events:none}
+  .input-suffix input{padding-right:36px}
+
+  .picker-search{position:relative;margin-bottom:14px}
+  .picker-search input{height:40px;padding:0 12px 0 36px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13.5px;color:var(--text);font-family:inherit;outline:none;width:100%}
+  .picker-search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--text-3)}
+  .picker-list{display:flex;flex-direction:column;border:1px solid var(--border-soft);border-radius:10px;overflow:hidden;max-height:380px;overflow-y:auto}
+  .picker-row{display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid var(--border-soft);cursor:pointer;text-decoration:none;color:inherit}
+  .picker-row:last-child{border-bottom:0}
+  .picker-row:hover{background:#FAFBFD}
+  .picker-row .p-thumb{width:40px;height:40px;border-radius:8px;background:#E9ECF2;overflow:hidden;flex-shrink:0}
+  .picker-row .p-thumb svg{width:100%;height:100%;display:block}
+  .picker-row .info{flex:1;min-width:0}
+  .picker-row .info .n{font-weight:700;font-size:13.5px;color:var(--text)}
+  .picker-row .info .a{color:var(--text-3);font-size:12px;margin-top:2px}
+  .picker-row .go{color:var(--text-3);flex-shrink:0}
+  .picker-row:hover .go{color:var(--primary)}
+  .picker-empty{padding:30px;text-align:center;color:var(--text-3);font-size:13px}
+
+  .thumb{width:42px;height:42px;border-radius:8px;background:#E9ECF2;flex-shrink:0;overflow:hidden}
+  .thumb svg{width:100%;height:100%;display:block}
+  td.name-cell{white-space:nowrap}
+  .name-inner{display:flex;align-items:center;gap:12px}
+</style>
+<script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+</head>
+<body>
+<div class="app">
+
+{{template "property_sidebar" .}}
+
+<div class="main">
+  <header class="topbar">
+    <div class="hamb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></div>
+    <div class="crumbs">物件管理</div>
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="物件名、住所、管理会社名を検索…"/>
+      <span class="kbd">⌘K</span>
+    </div>
+    <div class="bell">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+    </div>
+    {{if .CurrentUser}}
+    <div class="me">
+      <div class="me-init">{{slice (.CurrentUser.Name) 0 1}}</div>
+      <div>
+        <div class="nm">{{.CurrentUser.Name}}</div>
+      </div>
+      <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    {{end}}
+  </header>
+
+  <div class="page">
+    <div class="page-head">
+      <div>
+        <h1>物件管理</h1>
+        <div class="sub">管理物件の一覧・検索・詳細情報の確認ができます。</div>
+      </div>
+      <div class="head-actions">
+        <div class="split" id="registerSplit">
+          <button class="btn primary" id="openRegister" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>
+            物件を登録
+          </button>
+          <div class="split-chev" id="openSplitMenu">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg>
+          </div>
+          <div class="menu" id="splitMenu">
+            <div class="mi" data-act="register">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M12 8v8M8 12h8"/></svg>
+              <div><div class="t">新規物件を登録</div><div class="d">物件情報を新しく追加します</div></div>
+            </div>
+            <div class="mi" data-act="edit">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
+              <div><div class="t">物件情報を修正</div><div class="d">既存の物件を選んで編集します</div></div>
+            </div>
+            <div class="sep"></div>
+            <div class="mi" data-act="export">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+              <div><div class="t">CSVエクスポート</div><div class="d">物件一覧をCSVで出力します</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KPI cards -->
+    <div class="kpis">
+      {{with .ListStats}}
+      <div class="kpi">
+        <div class="kpi-ico" style="background:#EEF1F7;color:#5D6B83">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 9h16M9 4v16"/></svg>
+        </div>
+        <div>
+          <div class="lbl">総物件数</div>
+          <div class="num num-mono">{{.TotalCount}}<span class="u">件</span></div>
+          <div class="sub">全体</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico" style="background:#E7F7ED;color:#16A34A">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
+        </div>
+        <div>
+          <div class="lbl">管理中</div>
+          <div class="num num-mono">{{.ActiveCount}}<span class="u">件</span></div>
+          <div class="sub">{{percentInt .ActiveCount .TotalCount}}%</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico" style="background:#FEF3DC;color:#B45309">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 10v5M12 18h.01"/></svg>
+        </div>
+        <div>
+          <div class="lbl">非管理物件</div>
+          <div class="num num-mono">{{.InactiveCount}}<span class="u">件</span></div>
+          <div class="sub">&nbsp;</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico" style="background:#EEF1F7;color:#5D6B83">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="6" width="18" height="14" rx="1.5"/><path d="M3 10h18M7 6V4M17 6V4"/></svg>
+        </div>
+        <div>
+          <div class="lbl">総戸数</div>
+          <div class="num num-mono">{{.TotalUnits}}<span class="u">戸</span></div>
+          <div class="sub">全体合計</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico" style="background:#EAF1FF;color:#2F6BFF">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+        </div>
+        <div>
+          <div class="lbl">平均戸数</div>
+          <div class="num num-mono">{{formatFloat1 .AvgUnits}}<span class="u">戸</span></div>
+          <div class="sub">全体平均</div>
+        </div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-ico" style="background:#EAF1FF;color:#2F6BFF">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20c.7-3 3-4.5 5.5-4.5s4.8 1.5 5.5 4.5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.5 14c2 .3 3.5 1.5 4 3.7"/></svg>
+        </div>
+        <div>
+          <div class="lbl">管理物件数</div>
+          <div class="num num-mono">{{.ActiveCount}}<span class="u">件</span></div>
+          <div class="sub">&nbsp;</div>
+        </div>
+      </div>
+      {{end}}
+    </div>
+
+    <div class="grid">
+      <!-- LIST -->
+      <div class="listcard">
+        <div class="toolbar">
+          <div class="count">{{.Pagination.Total}}件中 {{add (multiply (subtract .Pagination.Page 1) .Pagination.PerPage) 1}}–{{minInt (multiply .Pagination.Page .Pagination.PerPage) (int64ToInt .Pagination.Total)}}件を表示</div>
+          <div class="right">
+            <a href="/properties/export?search={{.Query.Search}}&status={{.Query.Status}}" class="btn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>
+              エクスポート
+            </a>
+          </div>
+        </div>
+
+        <table id="properties-table">
+          <thead>
+            <tr>
+              <th>物件名</th>
+              <th>所在地</th>
+              <th>総戸数</th>
+              <th>担当者</th>
+              <th>ステータス</th>
+              <th>最終更新日</th>
+              <th>アクション</th>
+            </tr>
+          </thead>
+          {{template "_table.html" .}}
+        </table>
+
+        <!-- Pagination -->
+        {{if gt .Pagination.TotalPages 1}}
+        <div class="pager">
+          {{if gt .Pagination.Page 1}}
+          <a class="pg icon" href="?page={{subtract .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
+          </a>
+          {{else}}
+          <span class="pg icon disabled">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
+          </span>
+          {{end}}
+          {{range $i := iterate .Pagination.TotalPages}}
+          {{$p := add $i 1}}
+          <a class="pg{{if eq $p $.Pagination.Page}} active{{end}}" href="?page={{$p}}&search={{$.Query.Search}}&status={{$.Query.Status}}">{{$p}}</a>
+          {{end}}
+          {{if lt .Pagination.Page .Pagination.TotalPages}}
+          <a class="pg icon" href="?page={{add .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+          </a>
+          {{else}}
+          <span class="pg icon disabled">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+          </span>
+          {{end}}
+        </div>
+        {{end}}
+      </div>
+
+      <!-- FILTER -->
+      <aside class="filter">
+        <h3>フィルター</h3>
+        <form method="GET" action="/properties"
+          hx-get="/properties"
+          hx-target="#properties-table"
+          hx-swap="outerHTML"
+          hx-trigger="submit"
+          id="filterForm">
+          <div class="fgroup">
+            <div class="lab">ステータス</div>
+            <div class="check-row" data-val="">
+              <div class="left"><span class="cb{{if eq .Query.Status ""}} checked{{end}}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><span>すべて</span></div>
+            </div>
+            <div class="check-row" data-val="active">
+              <div class="left"><span class="cb{{if eq .Query.Status "active"}} checked{{end}}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><span>管理中</span></div>
+              {{if .ListStats}}<span class="ct">{{.ListStats.ActiveCount}}</span>{{end}}
+            </div>
+            <div class="check-row" data-val="inactive">
+              <div class="left"><span class="cb{{if eq .Query.Status "inactive"}} checked{{end}}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span><span>非管理</span></div>
+              {{if .ListStats}}<span class="ct">{{.ListStats.InactiveCount}}</span>{{end}}
+            </div>
+            <input type="hidden" name="status" id="statusInput" value="{{.Query.Status}}">
+          </div>
+
+          <div class="fgroup">
+            <div class="lab">総戸数</div>
+            <div class="frange">
+              <input name="unit_min" placeholder="戸数(最小)" value="">
+              <span class="muted">〜</span>
+              <input name="unit_max" placeholder="戸数(最大)" value="">
+            </div>
+          </div>
+          <div class="fgroup">
+            <div class="lab">最終更新日</div>
+            <div class="frange">
+              <div class="fdate">
+                <input name="updated_from" type="date" placeholder="開始日">
+                <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
+              </div>
+              <span class="muted">〜</span>
+              <div class="fdate">
+                <input name="updated_to" type="date" placeholder="終了日">
+                <svg class="ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16M9 3v4M15 3v4"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="foot">
+            <button type="button" class="btn-clear" onclick="clearFilter()">クリア</button>
+            <button type="submit" class="btn-apply">条件を適用</button>
+          </div>
+        </form>
+      </aside>
     </div>
   </div>
-
-  <div class="bg-white shadow rounded-lg p-4">
-    <form method="GET" action="/properties"
-      hx-get="/properties"
-      hx-target="#properties-table-body"
-      hx-swap="outerHTML"
-      hx-trigger="submit"
-      class="flex flex-wrap gap-3 items-end">
-      <div>
-        <label class="block text-xs text-gray-500 mb-1">検索</label>
-        <input type="text" name="search" value="{{.Query.Search}}" placeholder="物件名・住所・管理会社"
-          class="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-      </div>
-      <div>
-        <label class="block text-xs text-gray-500 mb-1">ステータス</label>
-        <select name="status" class="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-          <option value="">すべて</option>
-          <option value="active" {{if eq .Query.Status "active"}}selected{{end}}>有効</option>
-          <option value="inactive" {{if eq .Query.Status "inactive"}}selected{{end}}>無効</option>
-        </select>
-      </div>
-      <button type="submit"
-        class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-sm font-medium">
-        絞り込む
-      </button>
-      <a href="/properties" class="px-4 py-1.5 text-sm text-gray-500 hover:text-gray-700">リセット</a>
-    </form>
-  </div>
-
-  <div class="bg-white shadow rounded-lg overflow-hidden">
-    <table class="min-w-full divide-y divide-gray-200">
-      <thead class="bg-gray-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物件名</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">住所</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">戸数</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">管理会社</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
-          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新日</th>
-          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
-        </tr>
-      </thead>
-      {{template "_table.html" .}}
-    </table>
-  </div>
-
-  {{if gt .Pagination.TotalPages 1}}
-  <div class="flex items-center justify-between">
-    <p class="text-sm text-gray-700">
-      全 <span class="font-medium">{{.Pagination.Total}}</span> 件中
-      <span class="font-medium">{{.Pagination.Page}}</span> / {{.Pagination.TotalPages}} ページ
-    </p>
-    <div class="flex gap-1">
-      {{if gt .Pagination.Page 1}}
-      <a href="?page={{subtract .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}"
-        class="px-3 py-1 border rounded text-sm hover:bg-gray-50">前へ</a>
-      {{end}}
-      {{if lt .Pagination.Page .Pagination.TotalPages}}
-      <a href="?page={{add .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}"
-        class="px-3 py-1 border rounded text-sm hover:bg-gray-50">次へ</a>
-      {{end}}
-    </div>
-  </div>
-  {{end}}
 </div>
+</div>
+
+<!-- Modal: Register form -->
+<div class="modal-overlay" id="formModal">
+  <div class="modal" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <h2 id="formTitle">物件を登録</h2>
+        <div class="sub" id="formSub">基本情報・所在地・管理情報を入力してください</div>
+      </div>
+      <button class="x" data-close aria-label="閉じる"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <form id="propForm" method="POST" action="/properties" autocomplete="off">
+        <div class="form-section">
+          <h3><span class="step">1</span>基本情報</h3>
+          <div class="fgrid">
+            <div class="field full">
+              <label>物件名 <span class="req">必須</span></label>
+              <input name="name" placeholder="例: アーバンコート渋谷" required>
+            </div>
+            <div class="field">
+              <label>ステータス</label>
+              <select name="status">
+                <option value="active">管理中</option>
+                <option value="inactive">非管理</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>総戸数 <span class="req">必須</span></label>
+              <div class="input-suffix"><input name="unit_count" type="number" min="0" placeholder="0"><span class="suf">戸</span></div>
+            </div>
+            <div class="field">
+              <label>延床面積</label>
+              <div class="input-suffix"><input name="area" type="number" step="0.01" placeholder="0.00"><span class="suf">㎡</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3><span class="step">2</span>所在地</h3>
+          <div class="fgrid">
+            <div class="field full">
+              <label>住所 <span class="req">必須</span></label>
+              <input name="address" placeholder="東京都渋谷区神南1-12-6" required>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3><span class="step">3</span>管理情報</h3>
+          <div class="fgrid">
+            <div class="field">
+              <label>管理会社</label>
+              <input name="management_company" placeholder="例: 山田不動産株式会社">
+            </div>
+          </div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close type="button">キャンセル</button>
+      <button class="btn primary" type="submit" form="propForm" id="submitBtn">登録する</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit picker -->
+<div class="modal-overlay" id="pickModal">
+  <div class="modal modal-sm" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div>
+        <h2>修正する物件を選択</h2>
+        <div class="sub">物件を選ぶと編集フォームが開きます</div>
+      </div>
+      <button class="x" data-close aria-label="閉じる"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    </div>
+    <div class="modal-body">
+      <div class="picker-search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="pickSearch" placeholder="物件名・住所で絞り込み…" oninput="filterPicker(this.value)">
+      </div>
+      <div class="picker-list" id="pickList">
+        {{range .Properties}}
+        <a class="picker-row" href="/properties/{{.ID}}/edit"
+           data-name="{{.Name}}" data-addr="{{.Address}}">
+          <div class="p-thumb">{{buildingThumb .ID}}</div>
+          <div class="info">
+            <div class="n">{{.Name}}</div>
+            <div class="a">{{.Address}}{{if .UnitCount}} ・ {{derefInt .UnitCount}}戸{{end}}</div>
+          </div>
+          <svg class="go" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+        </a>
+        {{else}}
+        <div class="picker-empty">登録されている物件がありません</div>
+        {{end}}
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" data-close type="button">閉じる</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openModal(id){ document.getElementById(id).classList.add('open'); document.body.style.overflow='hidden'; }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); document.body.style.overflow=''; }
+  document.querySelectorAll('.modal-overlay').forEach(o=>{
+    o.addEventListener('click',e=>{ if(e.target===o) closeModal(o.id); });
+  });
+  document.querySelectorAll('[data-close]').forEach(b=>{
+    b.addEventListener('click',()=>{ const m=b.closest('.modal-overlay'); if(m) closeModal(m.id); });
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'){
+      document.querySelectorAll('.modal-overlay.open').forEach(o=>closeModal(o.id));
+      document.getElementById('splitMenu').classList.remove('open');
+    }
+  });
+
+  document.getElementById('openRegister').addEventListener('click',()=>{ openModal('formModal'); });
+
+  const split = document.getElementById('registerSplit');
+  const menu = document.getElementById('splitMenu');
+  document.getElementById('openSplitMenu').addEventListener('click',e=>{
+    e.stopPropagation();
+    menu.classList.toggle('open');
+  });
+  document.addEventListener('click',e=>{ if(!split.contains(e.target)) menu.classList.remove('open'); });
+  menu.querySelectorAll('.mi').forEach(mi=>{
+    mi.addEventListener('click',()=>{
+      menu.classList.remove('open');
+      const act = mi.dataset.act;
+      if(act==='register'){ openModal('formModal'); }
+      else if(act==='edit'){ openModal('pickModal'); }
+      else if(act==='export'){ window.location='/properties/export?search=&status='; }
+    });
+  });
+
+  function filterPicker(q){
+    const ql = (q||'').toLowerCase();
+    document.querySelectorAll('#pickList .picker-row').forEach(r=>{
+      const n = (r.dataset.name||'').toLowerCase();
+      const a = (r.dataset.addr||'').toLowerCase();
+      r.style.display = (!ql || n.includes(ql) || a.includes(ql)) ? '' : 'none';
+    });
+    const empty = document.querySelector('#pickList .picker-empty');
+    if(empty) empty.style.display = 'none';
+  }
+
+  document.querySelectorAll('.check-row[data-val]').forEach(r=>{
+    r.addEventListener('click',()=>{
+      document.querySelectorAll('.check-row[data-val]').forEach(x=>x.querySelector('.cb').classList.remove('checked'));
+      r.querySelector('.cb').classList.add('checked');
+      document.getElementById('statusInput').value = r.dataset.val;
+    });
+  });
+
+  function clearFilter(){
+    document.getElementById('filterForm').reset();
+    document.getElementById('statusInput').value = '';
+    document.querySelectorAll('.check-row[data-val]').forEach(x=>x.querySelector('.cb').classList.remove('checked'));
+    document.querySelector('.check-row[data-val=""]').querySelector('.cb').classList.add('checked');
+  }
+</script>
+</body>
+</html>
 {{end}}

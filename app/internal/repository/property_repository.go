@@ -179,6 +179,26 @@ func (r *PropertyRepository) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
+func (r *PropertyRepository) GetListStats(ctx context.Context) (*domain.PropertyListStats, error) {
+	const q = `
+		SELECT
+			COUNT(*)                                               AS total_count,
+			COUNT(*) FILTER (WHERE status = 'active')             AS active_count,
+			COUNT(*) FILTER (WHERE status = 'inactive')           AS inactive_count,
+			COALESCE(SUM(unit_count), 0)                          AS total_units,
+			COALESCE(AVG(unit_count::FLOAT), 0)                   AS avg_units
+		FROM properties`
+
+	s := &domain.PropertyListStats{}
+	err := r.db.QueryRow(ctx, q).Scan(
+		&s.TotalCount, &s.ActiveCount, &s.InactiveCount, &s.TotalUnits, &s.AvgUnits,
+	)
+	if err != nil {
+		return nil, fmt.Errorf("get property list stats: %w", err)
+	}
+	return s, nil
+}
+
 func (r *PropertyRepository) GetStats(ctx context.Context, propertyID int64) (*domain.PropertyStats, error) {
 	const q = `
 		SELECT

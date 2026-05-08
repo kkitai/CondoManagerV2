@@ -1,74 +1,155 @@
-{{define "title"}}{{if .IsNew}}物件追加{{else}}物件編集{{end}} — CondoManager{{end}}
+{{define "base"}}
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<title>{{if .IsNew}}物件を登録{{else}}物件を編集{{end}} — CondoManager</title>
+<meta name="viewport" content="width=1536"/>
+{{template "property_css" .}}
+<style>
+  .page{padding:32px 28px 60px;max-width:800px;margin:0 auto}
+  .page-head{margin-bottom:28px}
+  .page-head h1{font-size:24px;font-weight:700;letter-spacing:-.01em;margin:0 0 6px}
+  .page-head .sub{color:var(--text-3);font-size:13px}
+  .back{display:inline-flex;align-items:center;gap:6px;color:var(--primary);font-weight:500;font-size:13.5px;margin-bottom:14px}
+  .back:hover{color:var(--primary-600)}
 
-{{define "content"}}
-<div class="max-w-2xl mx-auto space-y-6">
-  <div class="flex items-center gap-4">
-    <a href="/properties" class="text-gray-400 hover:text-gray-600">← 一覧に戻る</a>
-    <h1 class="text-2xl font-bold text-gray-900">
-      {{if .IsNew}}物件追加{{else}}物件編集{{end}}
-    </h1>
-  </div>
+  .form-card{background:#fff;border:1px solid var(--border-soft);border-radius:14px;overflow:hidden;box-shadow:0 1px 0 rgba(20,30,55,.02)}
+  .form-section{padding:20px 24px;border-bottom:1px solid var(--border-soft)}
+  .form-section:last-child{border-bottom:0}
+  .form-section h3{font-size:13px;font-weight:700;color:var(--text-2);margin:0 0 14px;display:flex;align-items:center;gap:8px}
+  .form-section h3 .step{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:var(--primary-50);color:var(--primary);font-size:11px;font-weight:700}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field.full{grid-column:1/-1}
+  .field label{font-size:12.5px;font-weight:600;color:var(--text-2);display:flex;align-items:center;gap:6px}
+  .field label .req{color:var(--red);font-size:11px;font-weight:700}
+  .field input,.field select,.field textarea{height:38px;padding:0 12px;border:1px solid var(--border);border-radius:8px;background:#fff;font-size:13.5px;color:var(--text);font-family:inherit;outline:none;width:100%}
+  .field textarea{height:auto;padding:10px 12px;min-height:80px;resize:vertical}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(47,107,255,.12)}
+  .field input.err,.field select.err,.field textarea.err{border-color:var(--red)}
+  .field input::placeholder,.field textarea::placeholder{color:var(--text-3)}
+  .field .hint{font-size:11.5px;color:var(--text-3)}
+  .field .err-msg{font-size:11.5px;color:var(--red)}
+  .field select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A93A6' stroke-width='2'><path d='m6 9 6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px}
+  .input-suffix{position:relative}
+  .input-suffix .suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--text-3);font-size:12.5px;pointer-events:none}
+  .input-suffix input{padding-right:36px}
+  .form-foot{padding:16px 24px;background:#FAFBFD;display:flex;justify-content:flex-end;gap:10px}
+</style>
+</head>
+<body>
+<div class="app">
+{{template "property_sidebar" .}}
+<div class="main">
+  <header class="topbar">
+    <div class="hamb"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg></div>
+    <div class="crumbs">
+      <a href="/properties">物件管理</a>
+      <svg class="sep" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+      <span class="now">{{if .IsNew}}物件を登録{{else}}物件を編集{{end}}</span>
+    </div>
+    {{if .CurrentUser}}
+    <div class="search" style="margin-left:auto">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input placeholder="物件名、住所を検索…"/>
+    </div>
+    <div class="me">
+      <div class="me-init">{{slice (.CurrentUser.Name) 0 1}}</div>
+      <div><div class="nm">{{.CurrentUser.Name}}</div></div>
+      <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    {{end}}
+  </header>
 
-  <div class="bg-white shadow rounded-lg p-6">
-    <form method="POST" action="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}" class="space-y-5">
-      {{if not .IsNew}}
-        <input type="hidden" name="_method" value="PUT">
-      {{end}}
+  <div class="page">
+    <a class="back" href="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
+      {{if .IsNew}}一覧に戻る{{else}}詳細に戻る{{end}}
+    </a>
+    <div class="page-head">
+      <h1>{{if .IsNew}}物件を登録{{else}}物件情報を編集{{end}}</h1>
+      <div class="sub">基本情報・所在地・管理情報を入力してください</div>
+    </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">物件名 <span class="text-red-500">*</span></label>
-        <input type="text" name="name" value="{{.Property.Name}}" required maxlength="200"
-          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 {{if index .Errors "name"}}border-red-400{{end}}">
-        {{if index .Errors "name"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "name"}}</p>{{end}}
-      </div>
+    <div class="form-card">
+      <form method="POST" action="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}">
+        {{if not .IsNew}}<input type="hidden" name="_method" value="PUT">{{end}}
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">住所 <span class="text-red-500">*</span></label>
-        <textarea name="address" required rows="2"
-          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 {{if index .Errors "address"}}border-red-400{{end}}">{{.Property.Address}}</textarea>
-        {{if index .Errors "address"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "address"}}</p>{{end}}
-      </div>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-gray-700">面積 (㎡)</label>
-          <input type="number" name="area" step="0.01" min="0"
-            value="{{if .Property.Area}}{{printf "%.2f" (derefFloat64 .Property.Area)}}{{end}}"
-            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+        <div class="form-section">
+          <h3><span class="step">1</span>基本情報</h3>
+          <div class="fgrid">
+            <div class="field full">
+              <label>物件名 <span class="req">必須</span></label>
+              <input type="text" name="name" value="{{.Property.Name}}" required maxlength="200"
+                class="{{if index .Errors "name"}}err{{end}}" placeholder="例: アーバンコート渋谷">
+              {{if index .Errors "name"}}<span class="err-msg">{{index .Errors "name"}}</span>{{end}}
+            </div>
+            <div class="field">
+              <label>ステータス</label>
+              <select name="status">
+                <option value="active" {{if eq (string .Property.Status) "active"}}selected{{end}}>管理中</option>
+                <option value="inactive" {{if eq (string .Property.Status) "inactive"}}selected{{end}}>非管理</option>
+              </select>
+              {{if index .Errors "status"}}<span class="err-msg">{{index .Errors "status"}}</span>{{end}}
+            </div>
+            <div class="field">
+              <label>総戸数</label>
+              <div class="input-suffix">
+                <input type="number" name="unit_count" min="0"
+                  value="{{if .Property.UnitCount}}{{derefInt .Property.UnitCount}}{{end}}"
+                  placeholder="0">
+                <span class="suf">戸</span>
+              </div>
+            </div>
+            <div class="field">
+              <label>延床面積</label>
+              <div class="input-suffix">
+                <input type="number" name="area" step="0.01" min="0"
+                  value="{{if .Property.Area}}{{printf "%.2f" (derefFloat64 .Property.Area)}}{{end}}"
+                  placeholder="0.00">
+                <span class="suf">㎡</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <label class="block text-sm font-medium text-gray-700">戸数</label>
-          <input type="number" name="unit_count" min="0"
-            value="{{if .Property.UnitCount}}{{derefInt .Property.UnitCount}}{{end}}"
-            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+
+        <div class="form-section">
+          <h3><span class="step">2</span>所在地</h3>
+          <div class="fgrid">
+            <div class="field full">
+              <label>住所 <span class="req">必須</span></label>
+              <input type="text" name="address" value="{{.Property.Address}}" required
+                class="{{if index .Errors "address"}}err{{end}}"
+                placeholder="東京都渋谷区神南1-12-6">
+              {{if index .Errors "address"}}<span class="err-msg">{{index .Errors "address"}}</span>{{end}}
+            </div>
+          </div>
         </div>
-      </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">ステータス <span class="text-red-500">*</span></label>
-        <select name="status" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-          <option value="active" {{if eq (string .Property.Status) "active"}}selected{{end}}>有効</option>
-          <option value="inactive" {{if eq (string .Property.Status) "inactive"}}selected{{end}}>無効</option>
-        </select>
-        {{if index .Errors "status"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "status"}}</p>{{end}}
-      </div>
+        <div class="form-section">
+          <h3><span class="step">3</span>管理情報</h3>
+          <div class="fgrid">
+            <div class="field">
+              <label>管理会社</label>
+              <input type="text" name="management_company"
+                value="{{deref .Property.ManagementCompany}}"
+                placeholder="例: 山田不動産株式会社">
+            </div>
+          </div>
+        </div>
 
-      <div>
-        <label class="block text-sm font-medium text-gray-700">管理会社</label>
-        <input type="text" name="management_company" value="{{deref .Property.ManagementCompany}}" maxlength="200"
-          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
-      </div>
-
-      <div class="flex gap-3 pt-2">
-        <button type="submit"
-          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
-          {{if .IsNew}}作成{{else}}保存{{end}}
-        </button>
-        <a href="/properties" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md">
-          キャンセル
-        </a>
-      </div>
-    </form>
+        <div class="form-foot">
+          <a href="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}" class="btn">キャンセル</a>
+          <button type="submit" class="btn primary">
+            {{if .IsNew}}登録する{{else}}変更を保存{{end}}
+          </button>
+        </div>
+      </form>
+    </div>
   </div>
 </div>
+</div>
+</body>
+</html>
 {{end}}

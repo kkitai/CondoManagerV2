@@ -154,6 +154,10 @@ func (s *PropertyService) GetStats(ctx context.Context, propertyID int64) (*doma
 	return s.propertyRepo.GetStats(ctx, propertyID)
 }
 
+func (s *PropertyService) GetListStats(ctx context.Context) (*domain.PropertyListStats, error) {
+	return s.propertyRepo.GetListStats(ctx)
+}
+
 func parseOptionalFloat(s string) (*float64, error) {
 	if s == "" {
 		return nil, nil

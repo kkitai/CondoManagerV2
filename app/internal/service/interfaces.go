@@ -35,4 +35,5 @@ type PropertyServicer interface {
 	GetByID(ctx context.Context, id int64) (*domain.Property, error)
 	List(ctx context.Context, params domain.PropertyListParams) ([]*domain.Property, int64, error)
 	GetStats(ctx context.Context, propertyID int64) (*domain.PropertyStats, error)
+	GetListStats(ctx context.Context) (*domain.PropertyListStats, error)
 }

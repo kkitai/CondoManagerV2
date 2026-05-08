@@ -29,6 +29,7 @@ type propertyListData struct {
 	Pagination  pagination.Params
 	Sort        queryparam.SortParams
 	Query       propertyListQuery
+	ListStats   *domain.PropertyListStats
 	CurrentUser *domain.User
 }
 
@@ -65,11 +66,18 @@ func (h *PropertyHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 	pag.SetTotal(total)
 
+	listStats, err := h.propertySvc.GetListStats(r.Context())
+	if err != nil {
+		Error(w, http.StatusInternalServerError, "統計情報の取得に失敗しました")
+		return
+	}
+
 	data := &propertyListData{
 		Properties:  props,
 		Pagination:  pag,
 		Sort:        sort,
 		Query:       listQuery,
+		ListStats:   listStats,
 		CurrentUser: middleware.CurrentUser(r),
 	}
 
