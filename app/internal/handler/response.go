@@ -104,6 +104,15 @@ func (r *Renderer) HTML(w http.ResponseWriter, status int, tmplName string, data
 		http.Error(w, "template parse error: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// load partials (_*.html) in the same directory as the template
+	partialsPattern := filepath.Join(filepath.Dir(tmplPath), "_*.html")
+	if matches, _ := filepath.Glob(partialsPattern); len(matches) > 0 {
+		tmpl, err = tmpl.ParseGlob(partialsPattern)
+		if err != nil {
+			http.Error(w, "template parse error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
 	tmpl, err = tmpl.ParseFiles(tmplPath)
 	if err != nil {
 		http.Error(w, "template parse error: "+err.Error(), http.StatusInternalServerError)
