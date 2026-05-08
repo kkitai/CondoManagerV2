@@ -6,8 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/go-chi/chi/v5"
-
 	"github.com/kkitai/CondoManagerV2/app/internal/csvexport"
 	"github.com/kkitai/CondoManagerV2/app/internal/domain"
 	"github.com/kkitai/CondoManagerV2/app/internal/middleware"
@@ -341,9 +339,3 @@ func buildPropertyFromInput(in service.CreatePropertyInput) *domain.Property {
 	}
 	return p
 }
-
-func propertyIDFromChi(r *http.Request) (int64, error) {
-	return strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-}
-
-var _ = propertyIDFromChi

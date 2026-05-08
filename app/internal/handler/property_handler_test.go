@@ -252,3 +252,136 @@ func TestPropertyHandler_Delete_Error(t *testing.T) {
 		t.Errorf("status = %d, want 500", w.Code)
 	}
 }
+
+func TestPropertyHandler_Edit_Success(t *testing.T) {
+	dir := setupPropertyTemplateDir(t)
+	renderer := handler.NewRenderer(dir)
+	prop := makeTestProperty(1, "Property A")
+	svc := &mockPropertyService{getProp: prop}
+	h := handler.NewPropertyHandler(renderer, svc)
+
+	r := httptest.NewRequest(http.MethodGet, "/properties/1/edit", nil)
+	r = withAdminUser(r)
+	r = withChiURLParam(r, "id", "1")
+	w := httptest.NewRecorder()
+
+	h.Edit(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("status = %d, want 200", w.Code)
+	}
+}
+
+func TestPropertyHandler_Edit_NotFound(t *testing.T) {
+	dir := setupPropertyTemplateDir(t)
+	renderer := handler.NewRenderer(dir)
+	svc := &mockPropertyService{getErr: errTest}
+	h := handler.NewPropertyHandler(renderer, svc)
+
+	r := httptest.NewRequest(http.MethodGet, "/properties/999/edit", nil)
+	r = withAdminUser(r)
+	r = withChiURLParam(r, "id", "999")
+	w := httptest.NewRecorder()
+
+	h.Edit(w, r)
+
+	if w.Code != http.StatusNotFound {
+		t.Errorf("status = %d, want 404", w.Code)
+	}
+}
+
+func TestPropertyHandler_Update_Success(t *testing.T) {
+	dir := setupPropertyTemplateDir(t)
+	renderer := handler.NewRenderer(dir)
+	updated := makeTestProperty(1, "Updated")
+	svc := &mockPropertyService{updateProp: updated}
+	h := handler.NewPropertyHandler(renderer, svc)
+
+	form := url.Values{
+		"name":    {"Updated"},
+		"address": {"Tokyo"},
+		"status":  {"active"},
+	}
+	r := httptest.NewRequest(http.MethodPut, "/properties/1", strings.NewReader(form.Encode()))
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r = withAdminUser(r)
+	r = withChiURLParam(r, "id", "1")
+	w := httptest.NewRecorder()
+
+	h.Update(w, r)
+
+	if w.Code != http.StatusSeeOther {
+		t.Errorf("status = %d, want 303", w.Code)
+	}
+}
+
+func TestPropertyHandler_Update_ValidationError(t *testing.T) {
+	dir := setupPropertyTemplateDir(t)
+	renderer := handler.NewRenderer(dir)
+	prop := makeTestProperty(1, "P")
+	svc := &mockPropertyService{
+		updateErr: validator.Errors{"name": "必須項目です"},
+		getProp:   prop,
+	}
+	h := handler.NewPropertyHandler(renderer, svc)
+
+	form := url.Values{"name": {""}, "address": {"Tokyo"}, "status": {"active"}}
+	r := httptest.NewRequest(http.MethodPut, "/properties/1", strings.NewReader(form.Encode()))
+	r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	r = withAdminUser(r)
+	r = withChiURLParam(r, "id", "1")
+	w := httptest.NewRecorder()
+
+	h.Update(w, r)
+
+	if w.Code != http.StatusUnprocessableEntity {
+		t.Errorf("status = %d, want 422", w.Code)
+	}
+}
+
+func TestPropertyHandler_Export(t *testing.T) {
+	dir := setupPropertyTemplateDir(t)
+	renderer := handler.NewRenderer(dir)
+	area := 100.0
+	units := 10
+	mgmt := "Mgmt Co"
+	prop := makeTestProperty(1, "Export Property")
+	prop.Area = &area
+	prop.UnitCount = &units
+	prop.ManagementCompany = &mgmt
+
+	svc := &mockPropertyService{listProps: []*domain.Property{prop}, listTotal: 1}
+	h := handler.NewPropertyHandler(renderer, svc)
+
+	r := httptest.NewRequest(http.MethodGet, "/properties/export", nil)
+	r = withAdminUser(r)
+	w := httptest.NewRecorder()
+
+	h.Export(w, r)
+
+	if w.Code != http.StatusOK {
+		t.Errorf("status = %d, want 200", w.Code)
+	}
+	if ct := w.Header().Get("Content-Type"); ct != "text/csv; charset=utf-8" {
+		t.Errorf("Content-Type = %q", ct)
+	}
+}
+
+func TestPropertyHandler_Show_StatsError(t *testing.T) {
+	dir := setupPropertyTemplateDir(t)
+	renderer := handler.NewRenderer(dir)
+	prop := makeTestProperty(1, "Property A")
+	svc := &mockPropertyService{getProp: prop, statsErr: errTest}
+	h := handler.NewPropertyHandler(renderer, svc)
+
+	r := httptest.NewRequest(http.MethodGet, "/properties/1", nil)
+	r = withAdminUser(r)
+	r = withChiURLParam(r, "id", "1")
+	w := httptest.NewRecorder()
+
+	h.Show(w, r)
+
+	if w.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want 500", w.Code)
+	}
+}
