@@ -294,10 +294,13 @@
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">ステータス</label>
-              <select class="h-[38px] px-3 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 appearance-none pr-8 bg-no-repeat bg-[right_12px_center]" style="background-image:url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A93A6' stroke-width='2'><path d='m6 9 6 6 6-6'/></svg>\")" name="status">
-                <option value="active">管理中</option>
-                <option value="inactive">非管理</option>
-              </select>
+              <div class="relative">
+                <select name="status" class="h-[38px] px-3 pr-8 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 appearance-none">
+                  <option value="active">管理中</option>
+                  <option value="inactive">非管理</option>
+                </select>
+                <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-cm-text3" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">総戸数 <span class="text-cm-red text-[11px] font-bold">必須</span></label>

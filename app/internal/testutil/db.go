@@ -91,6 +91,29 @@ func NewTestDB(t *testing.T) *pgxpool.Pool {
 	return pool
 }
 
+// SeedTestDB applies the seed fixtures to the test database.
+// Uses a separate goose version table so it doesn't conflict with schema migrations.
+// Safe to call multiple times (ON CONFLICT DO NOTHING in seed SQL).
+func SeedTestDB(t *testing.T, pool *pgxpool.Pool) {
+	t.Helper()
+	seedsDir := filepath.Join(repoRoot(), "app", "db", "seeds")
+	db := stdlib.OpenDBFromPool(pool)
+	provider, err := goose.NewProvider(goose.DialectPostgres, db, os.DirFS(seedsDir),
+		goose.WithTableName("goose_seed_versions"),
+	)
+	if err != nil {
+		t.Fatalf("goose seed provider: %v", err)
+	}
+	if _, err := provider.Up(context.Background()); err != nil {
+		t.Fatalf("apply seeds: %v", err)
+	}
+}
+
+// TemplateDir returns the absolute path to app/templates.
+func TemplateDir() string {
+	return filepath.Join(repoRoot(), "app", "templates")
+}
+
 func envOr(key, def string) string {
 	if v := os.Getenv(key); v != "" {
 		return v
