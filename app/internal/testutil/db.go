@@ -14,6 +14,9 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+// migrationLockID is a stable advisory lock key for serializing migrations.
+const migrationLockID = 7482910
+
 // repoRoot finds the repository root by walking up from the current file.
 func repoRoot() string {
 	// This file is at app/internal/testutil/db.go
@@ -47,25 +50,41 @@ func NewTestDB(t *testing.T) *pgxpool.Pool {
 	}
 	cfg.MaxConns = 5
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	ctx := context.Background()
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatalf("create pool: %v", err)
 	}
 
-	if err := pool.Ping(context.Background()); err != nil {
+	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		t.Fatalf("ping db: %v", err)
+	}
+
+	// Acquire a session-level advisory lock to serialize migrations across
+	// concurrent test processes that share the same database.
+	if _, err := pool.Exec(ctx, "SELECT pg_advisory_lock($1)", migrationLockID); err != nil {
+		pool.Close()
+		t.Fatalf("acquire migration lock: %v", err)
 	}
 
 	// run migrations using absolute path
 	migrationsDir := filepath.Join(repoRoot(), "app", "db", "migrations")
 	db := stdlib.OpenDBFromPool(pool)
 	if err := goose.SetDialect("postgres"); err != nil {
+		_, _ = pool.Exec(ctx, "SELECT pg_advisory_unlock($1)", migrationLockID)
+		pool.Close()
 		t.Fatalf("set dialect: %v", err)
 	}
 	if err := goose.Up(db, migrationsDir); err != nil {
+		_, _ = pool.Exec(ctx, "SELECT pg_advisory_unlock($1)", migrationLockID)
 		pool.Close()
 		t.Fatalf("run migrations: %v", err)
+	}
+
+	if _, err := pool.Exec(ctx, "SELECT pg_advisory_unlock($1)", migrationLockID); err != nil {
+		pool.Close()
+		t.Fatalf("release migration lock: %v", err)
 	}
 
 	t.Cleanup(func() { pool.Close() })
