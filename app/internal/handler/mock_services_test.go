@@ -81,6 +81,41 @@ func (m *mockInvitationService) AcceptInvitation(_ context.Context, _, _ string)
 	return m.acceptErr
 }
 
+// mockPropertyService implements service.PropertyServicer
+type mockPropertyService struct {
+	createProp  *domain.Property
+	createErr   error
+	updateProp  *domain.Property
+	updateErr   error
+	deleteErr   error
+	getProp     *domain.Property
+	getErr      error
+	listProps   []*domain.Property
+	listTotal   int64
+	listErr     error
+	stats       *domain.PropertyStats
+	statsErr    error
+}
+
+func (m *mockPropertyService) Create(_ context.Context, _ service.CreatePropertyInput) (*domain.Property, error) {
+	return m.createProp, m.createErr
+}
+func (m *mockPropertyService) Update(_ context.Context, _ int64, _ service.UpdatePropertyInput) (*domain.Property, error) {
+	return m.updateProp, m.updateErr
+}
+func (m *mockPropertyService) Delete(_ context.Context, _ int64) error {
+	return m.deleteErr
+}
+func (m *mockPropertyService) GetByID(_ context.Context, _ int64) (*domain.Property, error) {
+	return m.getProp, m.getErr
+}
+func (m *mockPropertyService) List(_ context.Context, _ domain.PropertyListParams) ([]*domain.Property, int64, error) {
+	return m.listProps, m.listTotal, m.listErr
+}
+func (m *mockPropertyService) GetStats(_ context.Context, _ int64) (*domain.PropertyStats, error) {
+	return m.stats, m.statsErr
+}
+
 func makeAdminUser() *domain.User {
 	return &domain.User{
 		ID:    1,

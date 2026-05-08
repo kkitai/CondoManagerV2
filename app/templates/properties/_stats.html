@@ -1,0 +1,61 @@
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4" id="property-stats">
+  <div class="bg-white shadow rounded-lg p-4 text-center">
+    <p class="text-2xl font-bold text-gray-900">{{.TotalClaims}}</p>
+    <p class="text-xs text-gray-500 mt-1">クレーム総数</p>
+  </div>
+  <div class="bg-white shadow rounded-lg p-4 text-center">
+    <p class="text-2xl font-bold text-yellow-600">{{.OpenClaims}}</p>
+    <p class="text-xs text-gray-500 mt-1">未対応</p>
+  </div>
+  <div class="bg-white shadow rounded-lg p-4 text-center">
+    <p class="text-2xl font-bold text-blue-600">{{.InProgressClaims}}</p>
+    <p class="text-xs text-gray-500 mt-1">対応中</p>
+  </div>
+  <div class="bg-white shadow rounded-lg p-4 text-center">
+    <p class="text-2xl font-bold text-green-600">{{.CompletedClaims}}</p>
+    <p class="text-xs text-gray-500 mt-1">完了</p>
+  </div>
+</div>
+
+{{if .CategoryBreakdown}}
+<div class="mt-4">
+  <h3 class="text-sm font-medium text-gray-700 mb-2">カテゴリ別内訳</h3>
+  <div class="space-y-1">
+    {{range .CategoryBreakdown}}
+    <div class="flex items-center justify-between text-sm">
+      <span class="text-gray-600">{{.Category}}</span>
+      <span class="font-medium text-gray-900">{{.Count}} 件</span>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{if .SeverityBreakdown}}
+<div class="mt-4">
+  <h3 class="text-sm font-medium text-gray-700 mb-2">重篤度別内訳</h3>
+  <div class="space-y-1">
+    {{range .SeverityBreakdown}}
+    <div class="flex items-center justify-between text-sm">
+      <span class="text-gray-600">{{.Severity}}</span>
+      <span class="font-medium text-gray-900">{{.Count}} 件</span>
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{if .AvgResponseDays}}
+<div class="mt-4 flex gap-6 text-sm">
+  <div>
+    <span class="text-gray-500">平均対応日数:</span>
+    <span class="font-medium text-gray-900 ml-1">{{printf "%.1f" (derefFloat64 .AvgResponseDays)}} 日</span>
+  </div>
+  {{if .RecurrenceRate}}
+  <div>
+    <span class="text-gray-500">再発率:</span>
+    <span class="font-medium text-gray-900 ml-1">{{printf "%.1f" (mulFloat64 (derefFloat64 .RecurrenceRate) 100.0)}}%</span>
+  </div>
+  {{end}}
+</div>
+{{end}}

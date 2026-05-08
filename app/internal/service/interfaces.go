@@ -27,3 +27,12 @@ type InvitationServicer interface {
 	ValidateToken(ctx context.Context, token string) (*domain.InvitationToken, *domain.User, error)
 	AcceptInvitation(ctx context.Context, token, password string) error
 }
+
+type PropertyServicer interface {
+	Create(ctx context.Context, in CreatePropertyInput) (*domain.Property, error)
+	Update(ctx context.Context, id int64, in UpdatePropertyInput) (*domain.Property, error)
+	Delete(ctx context.Context, id int64) error
+	GetByID(ctx context.Context, id int64) (*domain.Property, error)
+	List(ctx context.Context, params domain.PropertyListParams) ([]*domain.Property, int64, error)
+	GetStats(ctx context.Context, propertyID int64) (*domain.PropertyStats, error)
+}

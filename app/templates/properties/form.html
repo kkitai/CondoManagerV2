@@ -1,0 +1,74 @@
+{{define "title"}}{{if .IsNew}}物件追加{{else}}物件編集{{end}} — CondoManager{{end}}
+
+{{define "content"}}
+<div class="max-w-2xl mx-auto space-y-6">
+  <div class="flex items-center gap-4">
+    <a href="/properties" class="text-gray-400 hover:text-gray-600">← 一覧に戻る</a>
+    <h1 class="text-2xl font-bold text-gray-900">
+      {{if .IsNew}}物件追加{{else}}物件編集{{end}}
+    </h1>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-6">
+    <form method="POST" action="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}" class="space-y-5">
+      {{if not .IsNew}}
+        <input type="hidden" name="_method" value="PUT">
+      {{end}}
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">物件名 <span class="text-red-500">*</span></label>
+        <input type="text" name="name" value="{{.Property.Name}}" required maxlength="200"
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 {{if index .Errors "name"}}border-red-400{{end}}">
+        {{if index .Errors "name"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "name"}}</p>{{end}}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">住所 <span class="text-red-500">*</span></label>
+        <textarea name="address" required rows="2"
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 {{if index .Errors "address"}}border-red-400{{end}}">{{.Property.Address}}</textarea>
+        {{if index .Errors "address"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "address"}}</p>{{end}}
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700">面積 (㎡)</label>
+          <input type="number" name="area" step="0.01" min="0"
+            value="{{if .Property.Area}}{{printf "%.2f" (derefFloat64 .Property.Area)}}{{end}}"
+            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700">戸数</label>
+          <input type="number" name="unit_count" min="0"
+            value="{{if .Property.UnitCount}}{{derefInt .Property.UnitCount}}{{end}}"
+            class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">ステータス <span class="text-red-500">*</span></label>
+        <select name="status" class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="active" {{if eq (string .Property.Status) "active"}}selected{{end}}>有効</option>
+          <option value="inactive" {{if eq (string .Property.Status) "inactive"}}selected{{end}}>無効</option>
+        </select>
+        {{if index .Errors "status"}}<p class="mt-1 text-xs text-red-600">{{index .Errors "status"}}</p>{{end}}
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium text-gray-700">管理会社</label>
+        <input type="text" name="management_company" value="{{deref .Property.ManagementCompany}}" maxlength="200"
+          class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+      </div>
+
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+          class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md">
+          {{if .IsNew}}作成{{else}}保存{{end}}
+        </button>
+        <a href="/properties" class="px-6 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-md">
+          キャンセル
+        </a>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

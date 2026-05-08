@@ -1,0 +1,40 @@
+<tbody class="bg-white divide-y divide-gray-200" id="properties-table-body">
+  {{range .Properties}}
+  <tr>
+    <td class="px-6 py-4 whitespace-nowrap">
+      <a href="/properties/{{.ID}}" class="text-blue-600 hover:text-blue-800 font-medium">{{.Name}}</a>
+    </td>
+    <td class="px-6 py-4 text-sm text-gray-600">{{.Address}}</td>
+    <td class="px-6 py-4 text-sm text-gray-600">
+      {{if .UnitCount}}{{derefInt .UnitCount}} 戸{{else}}-{{end}}
+    </td>
+    <td class="px-6 py-4 text-sm text-gray-600">
+      {{if .ManagementCompany}}{{deref .ManagementCompany}}{{else}}-{{end}}
+    </td>
+    <td class="px-6 py-4">
+      {{if eq (string .Status) "active"}}
+        <span class="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">有効</span>
+      {{else}}
+        <span class="px-2 py-1 text-xs rounded-full bg-gray-100 text-gray-600">無効</span>
+      {{end}}
+    </td>
+    <td class="px-6 py-4 text-sm text-gray-500">{{formatDate .UpdatedAt}}</td>
+    <td class="px-6 py-4 text-right text-sm">
+      <div class="flex justify-end gap-2">
+        <a href="/properties/{{.ID}}" class="text-blue-600 hover:text-blue-800">詳細</a>
+        <a href="/properties/{{.ID}}/edit" class="text-gray-600 hover:text-gray-800">編集</a>
+        <button
+          hx-delete="/properties/{{.ID}}"
+          hx-confirm="この物件を削除しますか？"
+          hx-target="closest tr"
+          hx-swap="outerHTML swap:0.3s"
+          class="text-red-600 hover:text-red-800">削除</button>
+      </div>
+    </td>
+  </tr>
+  {{else}}
+  <tr>
+    <td colspan="7" class="px-6 py-8 text-center text-sm text-gray-500">物件が見つかりません</td>
+  </tr>
+  {{end}}
+</tbody>

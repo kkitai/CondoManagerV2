@@ -31,6 +31,19 @@ var templateFuncs = template.FuncMap{
 	"add":      func(a, b int) int { return a + b },
 	"subtract": func(a, b int) int { return a - b },
 	"not":      func(b bool) bool { return !b },
+	"derefFloat64": func(f *float64) float64 {
+		if f == nil {
+			return 0
+		}
+		return *f
+	},
+	"mulFloat64": func(a, b float64) float64 { return a * b },
+	"derefInt": func(i *int) int {
+		if i == nil {
+			return 0
+		}
+		return *i
+	},
 }
 
 type Renderer struct {

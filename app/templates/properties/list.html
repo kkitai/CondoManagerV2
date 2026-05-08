@@ -1,0 +1,83 @@
+{{define "title"}}物件管理 — CondoManager{{end}}
+
+{{define "content"}}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <h1 class="text-2xl font-bold text-gray-900">物件管理</h1>
+    <div class="flex gap-2">
+      <a href="/properties/export?search={{.Query.Search}}&status={{.Query.Status}}"
+        class="px-4 py-2 bg-green-50 hover:bg-green-100 border border-green-300 rounded text-sm text-green-700">
+        CSV出力
+      </a>
+      <a href="/properties/new"
+        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+        + 物件追加
+      </a>
+    </div>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-4">
+    <form method="GET" action="/properties"
+      hx-get="/properties"
+      hx-target="#properties-table-body"
+      hx-swap="outerHTML"
+      hx-trigger="submit"
+      class="flex flex-wrap gap-3 items-end">
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">検索</label>
+        <input type="text" name="search" value="{{.Query.Search}}" placeholder="物件名・住所・管理会社"
+          class="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+      </div>
+      <div>
+        <label class="block text-xs text-gray-500 mb-1">ステータス</label>
+        <select name="status" class="border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <option value="">すべて</option>
+          <option value="active" {{if eq .Query.Status "active"}}selected{{end}}>有効</option>
+          <option value="inactive" {{if eq .Query.Status "inactive"}}selected{{end}}>無効</option>
+        </select>
+      </div>
+      <button type="submit"
+        class="px-4 py-1.5 bg-gray-100 hover:bg-gray-200 border border-gray-300 rounded text-sm font-medium">
+        絞り込む
+      </button>
+      <a href="/properties" class="px-4 py-1.5 text-sm text-gray-500 hover:text-gray-700">リセット</a>
+    </form>
+  </div>
+
+  <div class="bg-white shadow rounded-lg overflow-hidden">
+    <table class="min-w-full divide-y divide-gray-200">
+      <thead class="bg-gray-50">
+        <tr>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">物件名</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">住所</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">戸数</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">管理会社</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ステータス</th>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">更新日</th>
+          <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">操作</th>
+        </tr>
+      </thead>
+      {{template "_table.html" .}}
+    </table>
+  </div>
+
+  {{if gt .Pagination.TotalPages 1}}
+  <div class="flex items-center justify-between">
+    <p class="text-sm text-gray-700">
+      全 <span class="font-medium">{{.Pagination.Total}}</span> 件中
+      <span class="font-medium">{{.Pagination.Page}}</span> / {{.Pagination.TotalPages}} ページ
+    </p>
+    <div class="flex gap-1">
+      {{if gt .Pagination.Page 1}}
+      <a href="?page={{subtract .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}"
+        class="px-3 py-1 border rounded text-sm hover:bg-gray-50">前へ</a>
+      {{end}}
+      {{if lt .Pagination.Page .Pagination.TotalPages}}
+      <a href="?page={{add .Pagination.Page 1}}&search={{.Query.Search}}&status={{.Query.Status}}"
+        class="px-3 py-1 border rounded text-sm hover:bg-gray-50">次へ</a>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+</div>
+{{end}}
