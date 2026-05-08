@@ -1,0 +1,372 @@
+{{define "base"}}
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<title>{{.Property.Name}} — CondoManager</title>
+<meta name="viewport" content="width=1536"/>
+{{template "property_css" .}}
+<script src="https://unpkg.com/htmx.org@2.0.4" defer></script>
+</head>
+<body class="bg-cm-bg text-cm-text font-sans antialiased text-sm leading-relaxed">
+<div class="flex min-h-screen">
+
+{{template "property_sidebar" .}}
+
+<div class="flex-1 min-w-0 flex flex-col">
+  <header class="h-16 bg-white border-b border-cm-soft flex items-center gap-[18px] px-7">
+    <div class="w-8 h-8 grid place-items-center rounded-md text-cm-text2 cursor-pointer hover:bg-gray-50">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </div>
+    <div class="font-semibold text-cm-text flex items-center gap-2.5">
+      <a href="/properties" class="text-cm-text hover:text-cm-primary no-underline">物件管理</a>
+      <svg class="text-cm-text3" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+      <span>物件詳細</span>
+    </div>
+    <div class="ml-auto flex items-center gap-2.5 w-[380px] h-[38px] bg-[#F4F6FA] border border-transparent rounded-[10px] px-3 text-cm-text3 focus-within:bg-white focus-within:border-cm-border">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input class="flex-1 border-0 bg-transparent outline-none text-[13.5px] text-cm-text placeholder:text-cm-text3 font-sans" placeholder="物件名、住所、管理会社名を検索…"/>
+      <span class="font-[Inter,monospace] text-[11px] text-cm-text3 border border-cm-border px-1.5 py-0.5 rounded-[5px] bg-white">⌘K</span>
+    </div>
+    <div class="relative w-9 h-9 grid place-items-center rounded-lg text-cm-text2 cursor-pointer hover:bg-gray-50">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 9a6 6 0 1 1 12 0c0 5 2 6 2 6H4s2-1 2-6Z"/><path d="M10 19a2 2 0 0 0 4 0"/></svg>
+    </div>
+    {{if .CurrentUser}}
+    <div class="flex items-center gap-2.5 px-2.5 py-1 rounded-[10px] cursor-pointer hover:bg-gray-50">
+      <div class="w-[34px] h-[34px] rounded-full bg-cm-primary-l text-cm-primary font-bold text-[13px] grid place-items-center">{{slice (.CurrentUser.Name) 0 1}}</div>
+      <div><div class="font-bold text-[13.5px]">{{.CurrentUser.Name}}</div></div>
+      <svg class="text-cm-text3" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    {{end}}
+  </header>
+
+  <div class="p-[22px_28px_60px] grid grid-cols-[minmax(0,1fr)_320px] gap-[22px] items-start">
+    <!-- LEFT -->
+    <div>
+      <a class="inline-flex items-center gap-1.5 text-cm-primary font-medium text-[13.5px] mb-2.5 cursor-pointer hover:text-cm-primary-d no-underline" href="/properties">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
+        一覧に戻る
+      </a>
+
+      <div class="flex items-flex-start gap-3.5 mb-3.5">
+        <div>
+          <h1 class="text-[26px] font-bold tracking-tight m-0">{{.Property.Name}}</h1>
+          <div class="flex items-center gap-3.5 flex-wrap text-cm-text3 text-[12.5px] mt-2">
+            {{if eq (string .Property.Status) "active"}}
+              <span class="inline-flex items-center px-2.5 py-[3px] rounded-full font-semibold text-xs bg-cm-green-l text-cm-green">管理中</span>
+            {{else}}
+              <span class="inline-flex items-center px-2.5 py-[3px] rounded-full font-semibold text-xs bg-cm-slate text-cm-text2">非管理</span>
+            {{end}}
+            <span>ID: {{.Property.ID}}</span>
+            <span class="w-px h-3 bg-cm-border inline-block"></span>
+            <span>登録日: {{formatDate .Property.CreatedAt}}</span>
+            <span class="w-px h-3 bg-cm-border inline-block"></span>
+            <span>最終更新: {{formatDate .Property.UpdatedAt}}</span>
+          </div>
+        </div>
+        <div class="ml-auto flex items-center gap-2">
+          <a href="/properties/{{.Property.ID}}/edit" class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-lg font-semibold text-[13.5px] cursor-pointer border border-cm-border bg-white text-cm-text hover:bg-gray-50 no-underline">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h4l10-10-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/></svg>
+            編集
+          </a>
+          <button class="inline-flex items-center justify-center w-[38px] h-[38px] rounded-lg border border-cm-border bg-white text-cm-text2 cursor-pointer hover:bg-gray-50" aria-label="more">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="flex gap-7 border-b border-cm-soft mt-[18px] mb-[18px]" id="tabs">
+        <div class="tab pb-3 pt-3 font-semibold text-cm-primary text-sm cursor-pointer border-b-2 border-cm-primary -mb-px" data-tab="basic">基本情報</div>
+        <div class="tab pb-3 pt-3 font-semibold text-cm-text3 text-sm cursor-pointer border-b-2 border-transparent -mb-px hover:text-cm-text2" data-tab="claims">クレームサマリー</div>
+        <div class="tab pb-3 pt-3 font-semibold text-cm-text3 text-sm cursor-pointer border-b-2 border-transparent -mb-px hover:text-cm-text2" data-tab="equip">設備・点検</div>
+        <div class="tab pb-3 pt-3 font-semibold text-cm-text3 text-sm cursor-pointer border-b-2 border-transparent -mb-px hover:text-cm-text2" data-tab="contact">連絡先・担当者</div>
+        <div class="tab pb-3 pt-3 font-semibold text-cm-text3 text-sm cursor-pointer border-b-2 border-transparent -mb-px hover:text-cm-text2" data-tab="files">関連ファイル</div>
+        <div class="tab pb-3 pt-3 font-semibold text-cm-text3 text-sm cursor-pointer border-b-2 border-transparent -mb-px hover:text-cm-text2" data-tab="history">履歴</div>
+      </div>
+
+      <!-- BASIC TAB -->
+      <div class="tab-pane block" data-pane="basic">
+
+        <section class="bg-white border border-cm-soft rounded-xl p-[20px_22px] shadow-[0_1px_0_rgba(20,30,55,0.02)] mb-[18px]">
+          <h2 class="text-[15.5px] font-bold m-0 mb-4">基本情報</h2>
+          <div class="grid grid-cols-[280px_1fr_1fr] gap-6 items-start">
+            <div class="w-full aspect-[4/3] rounded-lg overflow-hidden bg-[#E9ECF2]">
+              <svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
+                <defs>
+                  <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
+                    <stop offset="0" stop-color="#CFE0EE"/><stop offset="1" stop-color="#E9EFF4"/>
+                  </linearGradient>
+                </defs>
+                <rect width="400" height="300" fill="url(#sky)"/>
+                <rect x="0" y="120" width="80" height="180" fill="#B7C2CD"/>
+                <rect x="320" y="100" width="90" height="200" fill="#B7C2CD"/>
+                <rect x="90" y="60" width="220" height="240" fill="#F2F4F7" stroke="#9AA4B0"/>
+                <g fill="#3D4756">
+                  <g><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,32)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,64)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,96)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                  <g transform="translate(0,128)"><rect x="105" y="80" width="28" height="22"/><rect x="143" y="80" width="28" height="22"/><rect x="181" y="80" width="28" height="22"/><rect x="219" y="80" width="28" height="22"/><rect x="257" y="80" width="28" height="22"/></g>
+                </g>
+                <rect x="180" y="248" width="40" height="52" fill="#3D4756"/>
+              </svg>
+            </div>
+
+            <div class="grid grid-cols-[104px_1fr] gap-y-3.5 gap-x-3 text-[13.5px]">
+              <div class="text-cm-text3">物件名</div><div class="text-cm-text">{{.Property.Name}}</div>
+              <div class="text-cm-text3">所在地</div><div class="text-cm-text">{{.Property.Address}}</div>
+              <div class="text-cm-text3">総戸数</div><div class="text-cm-text">{{if .Property.UnitCount}}{{derefInt .Property.UnitCount}}戸{{else}}-{{end}}</div>
+              <div class="text-cm-text3">延床面積</div><div class="text-cm-text">{{if .Property.Area}}{{printf "%.2f" (derefFloat64 .Property.Area)}}㎡{{else}}-{{end}}</div>
+              <div class="text-cm-text3">管理会社</div><div class="text-cm-text">{{if .Property.ManagementCompany}}{{deref .Property.ManagementCompany}}{{else}}-{{end}}</div>
+              <div class="text-cm-text3">登録日</div><div class="text-cm-text">{{formatDate .Property.CreatedAt}}</div>
+            </div>
+
+            <div class="grid grid-cols-[104px_1fr] gap-y-3.5 gap-x-3 text-[13.5px]">
+              <div class="text-cm-text3">ステータス</div>
+              <div class="text-cm-text">
+                {{if eq (string .Property.Status) "active"}}
+                  <span class="inline-flex items-center px-2.5 py-[3px] rounded-full font-semibold text-xs bg-cm-green-l text-cm-green">管理中</span>
+                {{else}}
+                  <span class="inline-flex items-center px-2.5 py-[3px] rounded-full font-semibold text-xs bg-cm-slate text-cm-text2">非管理</span>
+                {{end}}
+              </div>
+              {{with .Stats}}
+              <div class="text-cm-text3">総クレーム数</div><div class="text-cm-text">{{.TotalClaims}}件</div>
+              <div class="text-cm-text3">未対応</div><div class="{{if gt .OpenClaims 0}}text-cm-red font-semibold{{else}}text-cm-text{{end}}">{{.OpenClaims}}件</div>
+              <div class="text-cm-text3">対応中</div><div class="{{if gt .InProgressClaims 0}}text-[#B45309] font-semibold{{else}}text-cm-text{{end}}">{{.InProgressClaims}}件</div>
+              <div class="text-cm-text3">完了</div><div class="text-cm-text">{{.CompletedClaims}}件</div>
+              <div class="text-cm-text3">平均対応日数</div><div class="text-cm-text">{{if .AvgResponseDays}}{{formatFloat1 (derefFloat64 .AvgResponseDays)}}日{{else}}-{{end}}</div>
+              {{end}}
+              <div class="text-cm-text3">最終更新</div><div class="text-cm-text">{{formatDate .Property.UpdatedAt}}</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-white border border-cm-soft rounded-xl p-[20px_22px] shadow-[0_1px_0_rgba(20,30,55,0.02)] mb-[18px]">
+          <h2 class="text-[15.5px] font-bold m-0 mb-4">住所・地図</h2>
+          <div class="grid grid-cols-[1fr_1.05fr] gap-6 items-start">
+            <div class="grid grid-cols-[80px_1fr] gap-y-3.5 gap-x-3 text-[13.5px]">
+              <div class="text-cm-text3">住所</div><div class="text-cm-text">{{.Property.Address}}</div>
+              <div class="text-cm-text3">備考</div><div class="text-cm-text3">-</div>
+            </div>
+            <div class="aspect-[16/8.6] rounded-lg overflow-hidden border border-cm-soft bg-[#EEF1F4] relative">
+              <svg viewBox="0 0 600 320" preserveAspectRatio="xMidYMid slice" style="width:100%;height:100%">
+                <rect width="600" height="320" fill="#EEF2F0"/>
+                <g fill="#F7FAF7" stroke="#D9DEDB">
+                  <rect x="30" y="20" width="170" height="110"/><rect x="220" y="20" width="160" height="110"/>
+                  <rect x="400" y="20" width="170" height="110"/><rect x="30" y="150" width="170" height="150"/>
+                  <rect x="220" y="150" width="160" height="150"/><rect x="400" y="150" width="170" height="150"/>
+                </g>
+                <g stroke="#fff" stroke-width="14">
+                  <line x1="0" y1="140" x2="600" y2="140"/>
+                  <line x1="210" y1="0" x2="210" y2="320"/>
+                  <line x1="390" y1="0" x2="390" y2="320"/>
+                </g>
+                <g fill="#7A8390" font-family="Inter" font-size="10">
+                  <text x="50" y="78">エリア</text>
+                  <text x="240" y="78">周辺施設</text>
+                  <text x="420" y="78">主要道路</text>
+                </g>
+              </svg>
+              <svg class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-full w-[30px] h-[38px]" viewBox="0 0 30 38">
+                <path d="M15 0c8.3 0 15 6.7 15 15 0 11-15 23-15 23S0 26 0 15C0 6.7 6.7 0 15 0Z" fill="#2F6BFF"/>
+                <circle cx="15" cy="15" r="5.5" fill="#fff"/>
+              </svg>
+            </div>
+          </div>
+        </section>
+
+        <section class="bg-white border border-cm-soft rounded-xl p-[20px_22px] shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+          <h2 class="text-[15.5px] font-bold m-0 mb-4">建物・設備サマリー</h2>
+          <div class="grid grid-cols-4 gap-3.5">
+            <div class="bg-white border border-cm-soft rounded-[10px] p-[16px_16px_18px] flex items-start gap-3.5">
+              <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-[#EEF1F7] text-[#5D6B83]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="4" width="16" height="16" rx="1.5"/><path d="M4 9h16M9 4v16"/></svg>
+              </div>
+              <div>
+                <div class="text-xs text-cm-text3 mb-1">総クレーム数</div>
+                <div class="text-[22px] font-bold tracking-tight">{{if .Stats}}{{.Stats.TotalClaims}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span>{{else}}0<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span>{{end}}</div>
+              </div>
+            </div>
+            <div class="bg-white border border-cm-soft rounded-[10px] p-[16px_16px_18px] flex items-start gap-3.5">
+              <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-cm-amber-l text-[#B45309]">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3 2 21h20L12 3Z"/><path d="M12 10v5M12 18h.01"/></svg>
+              </div>
+              <div>
+                <div class="text-xs text-cm-text3 mb-1">未対応クレーム</div>
+                <div class="text-[22px] font-bold tracking-tight">{{if .Stats}}{{.Stats.OpenClaims}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span>{{else}}0<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span>{{end}}</div>
+              </div>
+            </div>
+            <div class="bg-white border border-cm-soft rounded-[10px] p-[16px_16px_18px] flex items-start gap-3.5">
+              <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-cm-green-l text-cm-green">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>
+              </div>
+              <div>
+                <div class="text-xs text-cm-text3 mb-1">完了クレーム</div>
+                <div class="text-[22px] font-bold tracking-tight">{{if .Stats}}{{.Stats.CompletedClaims}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span>{{else}}0<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">件</span>{{end}}</div>
+              </div>
+            </div>
+            <div class="bg-white border border-cm-soft rounded-[10px] p-[16px_16px_18px] flex items-start gap-3.5">
+              <div class="w-9 h-9 rounded-lg grid place-items-center flex-shrink-0 bg-cm-primary-l text-cm-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+              </div>
+              <div>
+                <div class="text-xs text-cm-text3 mb-1">平均対応日数</div>
+                <div class="text-[22px] font-bold tracking-tight">{{if and .Stats .Stats.AvgResponseDays}}{{formatFloat1 (derefFloat64 .Stats.AvgResponseDays)}}<span class="text-[13px] text-cm-text2 font-semibold ml-0.5">日</span>{{else}}-{{end}}</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Other tabs -->
+      <div class="tab-pane hidden" data-pane="claims">
+        <div class="border border-dashed border-cm-border rounded-xl p-[60px_20px] text-center text-cm-text3 bg-white">クレームサマリー — 右ペインのクレームサマリーをご参照ください。</div>
+      </div>
+      <div class="tab-pane hidden" data-pane="equip">
+        <div class="border border-dashed border-cm-border rounded-xl p-[60px_20px] text-center text-cm-text3 bg-white">設備・点検タブ（準備中）</div>
+      </div>
+      <div class="tab-pane hidden" data-pane="contact">
+        <div class="border border-dashed border-cm-border rounded-xl p-[60px_20px] text-center text-cm-text3 bg-white">連絡先・担当者タブ（準備中）</div>
+      </div>
+      <div class="tab-pane hidden" data-pane="files">
+        <div class="border border-dashed border-cm-border rounded-xl p-[60px_20px] text-center text-cm-text3 bg-white">関連ファイルタブ（準備中）</div>
+      </div>
+      <div class="tab-pane hidden" data-pane="history">
+        <div class="border border-dashed border-cm-border rounded-xl p-[60px_20px] text-center text-cm-text3 bg-white">履歴タブ（準備中）</div>
+      </div>
+    </div>
+
+    <!-- RIGHT RAIL -->
+    <aside class="flex flex-col gap-[18px] sticky top-3.5">
+
+      <section class="bg-white border border-cm-soft rounded-xl p-[18px] shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <h2 class="flex items-center justify-between text-[14px] font-bold m-0 mb-3.5">クレームサマリー<span class="text-[12.5px] text-cm-primary font-semibold cursor-pointer">詳細を見る</span></h2>
+        {{with .Stats}}
+        <div class="grid grid-cols-4 gap-2">
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">総数</span><span class="text-[20px] font-bold tracking-tight">{{.TotalClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">対応中</span><span class="text-[20px] font-bold tracking-tight text-cm-amber">{{.InProgressClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">未対応</span><span class="text-[20px] font-bold tracking-tight text-cm-red">{{.OpenClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">完了</span><span class="text-[20px] font-bold tracking-tight text-cm-green">{{.CompletedClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+        </div>
+        {{else}}
+        <div class="grid grid-cols-4 gap-2">
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">総数</span><span class="text-[20px] font-bold tracking-tight">0<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">対応中</span><span class="text-[20px] font-bold tracking-tight text-cm-amber">0<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">未対応</span><span class="text-[20px] font-bold tracking-tight text-cm-red">0<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+          <div class="flex flex-col gap-1"><span class="text-[11px] text-cm-text3">完了</span><span class="text-[20px] font-bold tracking-tight text-cm-green">0<span class="text-[11px] font-semibold ml-0.5">件</span></span></div>
+        </div>
+        {{end}}
+      </section>
+
+      {{with .Stats}}
+      {{if .CategoryBreakdown}}
+      <section class="bg-white border border-cm-soft rounded-xl p-[18px] shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <h2 class="flex items-center justify-between text-[14px] font-bold m-0 mb-3.5">カテゴリ別内訳<span class="text-[12.5px] text-cm-primary font-semibold cursor-pointer">詳細を見る</span></h2>
+        <div class="grid grid-cols-[104px_1fr] items-center gap-2.5">
+          <div class="relative w-[104px] h-[104px]">
+            <svg viewBox="0 0 42 42" width="104" height="104" id="catDonut">
+              <circle cx="21" cy="21" r="15.915" fill="none" stroke="#F0F2F6" stroke-width="6"/>
+            </svg>
+          </div>
+          <div class="flex flex-col gap-2 text-[12px]" id="catLegend"></div>
+        </div>
+      </section>
+      {{end}}
+
+      {{if .SeverityBreakdown}}
+      <section class="bg-white border border-cm-soft rounded-xl p-[18px] shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <h2 class="flex items-center justify-between text-[14px] font-bold m-0 mb-3.5">重要度別件数<span class="text-[12.5px] text-cm-primary font-semibold cursor-pointer">詳細を見る</span></h2>
+        <div class="grid grid-cols-[104px_1fr] items-center gap-2.5">
+          <div class="relative w-[104px] h-[104px]">
+            <svg viewBox="0 0 42 42" width="104" height="104" id="sevDonut">
+              <circle cx="21" cy="21" r="15.915" fill="none" stroke="#F0F2F6" stroke-width="6"/>
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center">
+              <div class="text-[18px] font-bold">{{.TotalClaims}}件</div>
+              <div class="text-[10.5px] text-cm-text3">総数</div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-2 text-[12px]" id="sevLegend"></div>
+        </div>
+      </section>
+      {{end}}
+      {{end}}
+
+      {{with .Property.Assignee}}
+      <section class="bg-white border border-cm-soft rounded-xl p-[18px] shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+        <h2 class="flex items-center justify-between text-[14px] font-bold m-0 mb-3.5">担当者情報<span class="text-[12.5px] text-cm-primary font-semibold cursor-pointer"><a href="/properties/{{$.Property.ID}}/edit" class="text-inherit no-underline">編集</a></span></h2>
+        <div class="text-cm-text3 text-[12.5px] mb-2">担当者</div>
+        <div class="flex items-flex-start gap-3">
+          <div class="w-12 h-12 rounded-full bg-cm-primary-l text-cm-primary font-bold text-[16px] grid place-items-center flex-shrink-0">{{slice .Name 0 1}}</div>
+          <div>
+            <div class="font-bold text-[14.5px] flex items-center gap-2">{{.Name}} <span class="inline-flex items-center px-2.5 py-[3px] rounded-full font-semibold text-xs bg-cm-primary-l text-cm-primary">物件担当</span></div>
+            <div class="text-cm-text3 text-[12.5px] mt-0.5">{{.Email}}</div>
+          </div>
+        </div>
+      </section>
+      {{end}}
+
+    </aside>
+  </div>
+</div>
+</div>
+
+<script>
+  // Tab switching
+  const tabs = document.querySelectorAll('#tabs .tab');
+  const panes = document.querySelectorAll('.tab-pane');
+  tabs.forEach(t => t.addEventListener('click', () => {
+    tabs.forEach(x => {
+      x.classList.toggle('text-cm-primary', x === t);
+      x.classList.toggle('border-cm-primary', x === t);
+      x.classList.toggle('text-cm-text3', x !== t);
+      x.classList.toggle('border-transparent', x !== t);
+    });
+    const id = t.dataset.tab;
+    panes.forEach(p => {
+      p.classList.toggle('hidden', p.dataset.pane !== id);
+      p.classList.toggle('block', p.dataset.pane === id);
+    });
+  }));
+
+  // Donut chart renderer
+  function renderDonut(svgId, legendId, data, colors) {
+    const svg = document.getElementById(svgId);
+    const legend = document.getElementById(legendId);
+    if (!svg || !legend || !data.length) return;
+    const total = data.reduce((s, d) => s + d.count, 0);
+    if (total === 0) return;
+    let offset = 25;
+    data.forEach((d, i) => {
+      const pct = d.count / total * 100;
+      const c = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c.setAttribute('cx', '21'); c.setAttribute('cy', '21'); c.setAttribute('r', '15.915');
+      c.setAttribute('fill', 'none'); c.setAttribute('stroke', colors[i % colors.length]);
+      c.setAttribute('stroke-width', '6');
+      c.setAttribute('stroke-dasharray', pct + ' ' + (100 - pct));
+      c.setAttribute('stroke-dashoffset', offset);
+      c.setAttribute('transform', 'rotate(-90 21 21)');
+      svg.appendChild(c);
+      offset -= pct;
+      const pctStr = Math.round(pct) + '%';
+      legend.innerHTML += `<div class="grid grid-cols-[10px_1fr_auto] items-center gap-[7px]"><span class="w-[9px] h-[9px] rounded-[2px] flex-shrink-0" style="background:${colors[i % colors.length]}"></span><span class="text-cm-text2 whitespace-nowrap overflow-hidden text-ellipsis">${d.label}</span><span class="text-cm-text3 whitespace-nowrap">${pctStr} (${d.count}件)</span></div>`;
+    });
+  }
+
+  {{with .Stats}}
+  {{if .CategoryBreakdown}}
+  renderDonut('catDonut', 'catLegend', [
+    {{range .CategoryBreakdown}}{label: {{.Category | js}}, count: {{.Count}}},{{end}}
+  ], ['#2F6BFF','#7AA6FF','#3FBF8A','#A6BBE8','#D6DCE5','#F59E0B']);
+  {{end}}
+  {{if .SeverityBreakdown}}
+  renderDonut('sevDonut', 'sevLegend', [
+    {{range .SeverityBreakdown}}{label: {{.Severity | js}}, count: {{.Count}}},{{end}}
+  ], ['#E0383E','#F59E0B','#FBE4B8']);
+  {{end}}
+  {{end}}
+</script>
+</body>
+</html>
+{{end}}

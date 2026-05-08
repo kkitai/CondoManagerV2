@@ -1,0 +1,41 @@
+<div id="property-stats" class="font-sans">
+  <div class="grid grid-cols-4 gap-2 mb-3.5">
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">総数</span>
+      <span class="text-[20px] font-bold text-cm-text">{{.TotalClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">対応中</span>
+      <span class="text-[20px] font-bold text-cm-amber">{{.InProgressClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">未対応</span>
+      <span class="text-[20px] font-bold text-cm-red">{{.OpenClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
+    </div>
+    <div class="flex flex-col gap-1">
+      <span class="text-[11px] text-cm-text3">完了</span>
+      <span class="text-[20px] font-bold text-cm-green">{{.CompletedClaims}}<span class="text-[11px] font-semibold ml-0.5">件</span></span>
+    </div>
+  </div>
+
+  {{if .CategoryBreakdown}}
+  <div class="mt-2.5">
+    <div class="text-[12px] font-bold text-cm-text2 mb-2">カテゴリ別内訳</div>
+    {{range .CategoryBreakdown}}
+    <div class="flex justify-between text-[12.5px] py-1 border-b border-cm-soft">
+      <span class="text-cm-text2">{{.Category}}</span>
+      <span class="font-semibold text-cm-text">{{.Count}}件</span>
+    </div>
+    {{end}}
+  </div>
+  {{end}}
+
+  {{if .AvgResponseDays}}
+  <div class="mt-2.5 text-[12.5px] text-cm-text2">
+    平均対応日数: <strong>{{formatFloat1 (derefFloat64 .AvgResponseDays)}}日</strong>
+    {{if .RecurrenceRate}}
+    　再発率: <strong>{{formatFloat1 (mulFloat64 (derefFloat64 .RecurrenceRate) 100.0)}}%</strong>
+    {{end}}
+  </div>
+  {{end}}
+</div>

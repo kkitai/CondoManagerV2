@@ -1,0 +1,33 @@
+{{define "property_css"}}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    fontFamily: { sans: ['"Noto Sans JP"', '"Inter"', 'system-ui', 'sans-serif'] },
+    extend: {
+      colors: {
+        'cm-bg':        '#F7F8FA',
+        'cm-border':    '#E6E8EE',
+        'cm-soft':      '#EEF0F4',
+        'cm-text':      '#1F2430',
+        'cm-text2':     '#4B5263',
+        'cm-text3':     '#8A93A6',
+        'cm-primary':   '#2F6BFF',
+        'cm-primary-d': '#2456D9',
+        'cm-primary-l': '#EAF1FF',
+        'cm-green':     '#16A34A',
+        'cm-green-l':   '#E7F7ED',
+        'cm-amber':     '#F59E0B',
+        'cm-amber-l':   '#FEF3DC',
+        'cm-red':       '#E0383E',
+        'cm-red-l':     '#FCE9EA',
+        'cm-slate':     '#F1F3F7',
+      },
+    },
+  },
+}
+</script>
+{{end}}

@@ -49,6 +49,7 @@ func main() {
 	sessionRepo := repository.NewSessionRepository(db)
 	userRepo := repository.NewUserRepository(db)
 	invitationRepo := repository.NewInvitationRepository(db)
+	propertyRepo := repository.NewPropertyRepository(db)
 
 	// services
 	sessionTTL := time.Duration(cfg.App.SessionMaxAge) * time.Second
@@ -56,6 +57,7 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	mail := mailer.New(cfg.SMTP)
 	invitationSvc := service.NewInvitationService(userRepo, invitationRepo, mail, cfg.App.BaseURL)
+	propertySvc := service.NewPropertyService(propertyRepo)
 
 	// handlers
 	renderer := handler.NewRenderer("app/templates")
@@ -63,6 +65,7 @@ func main() {
 	authHandler := handler.NewAuthHandler(renderer, authSvc, sessionTTL)
 	userHandler := handler.NewUserHandler(renderer, userSvc, invitationSvc)
 	invitationHandler := handler.NewInvitationHandler(renderer, invitationSvc)
+	propertyHandler := handler.NewPropertyHandler(renderer, propertySvc)
 
 	r := chi.NewRouter()
 
@@ -110,6 +113,17 @@ func main() {
 			r.Put("/users/{id}/status", userHandler.UpdateStatus)
 			r.Post("/users/{id}/invite", userHandler.SendInvitation)
 		})
+
+		// property management
+		r.Get("/properties", propertyHandler.List)
+		r.Get("/properties/new", propertyHandler.New)
+		r.Post("/properties", propertyHandler.Create)
+		r.Get("/properties/export", propertyHandler.Export)
+		r.Get("/properties/{id}", propertyHandler.Show)
+		r.Get("/properties/{id}/edit", propertyHandler.Edit)
+		r.Put("/properties/{id}", propertyHandler.Update)
+		r.Post("/properties/{id}", propertyHandler.Update) // form method override fallback
+		r.Delete("/properties/{id}", propertyHandler.Delete)
 	})
 
 	srv := &http.Server{

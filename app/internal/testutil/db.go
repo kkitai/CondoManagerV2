@@ -14,6 +14,9 @@ import (
 	"github.com/pressly/goose/v3"
 )
 
+// migrationLockID is a stable advisory lock key for serializing migrations.
+const migrationLockID = 7482910
+
 // repoRoot finds the repository root by walking up from the current file.
 func repoRoot() string {
 	// This file is at app/internal/testutil/db.go
@@ -47,29 +50,68 @@ func NewTestDB(t *testing.T) *pgxpool.Pool {
 	}
 	cfg.MaxConns = 5
 
-	pool, err := pgxpool.NewWithConfig(context.Background(), cfg)
+	ctx := context.Background()
+	pool, err := pgxpool.NewWithConfig(ctx, cfg)
 	if err != nil {
 		t.Fatalf("create pool: %v", err)
 	}
 
-	if err := pool.Ping(context.Background()); err != nil {
+	if err := pool.Ping(ctx); err != nil {
 		pool.Close()
 		t.Fatalf("ping db: %v", err)
+	}
+
+	// Acquire a session-level advisory lock to serialize migrations across
+	// concurrent test processes that share the same database.
+	if _, err := pool.Exec(ctx, "SELECT pg_advisory_lock($1)", migrationLockID); err != nil {
+		pool.Close()
+		t.Fatalf("acquire migration lock: %v", err)
 	}
 
 	// run migrations using absolute path
 	migrationsDir := filepath.Join(repoRoot(), "app", "db", "migrations")
 	db := stdlib.OpenDBFromPool(pool)
 	if err := goose.SetDialect("postgres"); err != nil {
+		_, _ = pool.Exec(ctx, "SELECT pg_advisory_unlock($1)", migrationLockID)
+		pool.Close()
 		t.Fatalf("set dialect: %v", err)
 	}
 	if err := goose.Up(db, migrationsDir); err != nil {
+		_, _ = pool.Exec(ctx, "SELECT pg_advisory_unlock($1)", migrationLockID)
 		pool.Close()
 		t.Fatalf("run migrations: %v", err)
 	}
 
+	if _, err := pool.Exec(ctx, "SELECT pg_advisory_unlock($1)", migrationLockID); err != nil {
+		pool.Close()
+		t.Fatalf("release migration lock: %v", err)
+	}
+
 	t.Cleanup(func() { pool.Close() })
 	return pool
+}
+
+// SeedTestDB applies the seed fixtures to the test database.
+// Uses a separate goose version table so it doesn't conflict with schema migrations.
+// Safe to call multiple times (ON CONFLICT DO NOTHING in seed SQL).
+func SeedTestDB(t *testing.T, pool *pgxpool.Pool) {
+	t.Helper()
+	seedsDir := filepath.Join(repoRoot(), "app", "db", "seeds")
+	db := stdlib.OpenDBFromPool(pool)
+	provider, err := goose.NewProvider(goose.DialectPostgres, db, os.DirFS(seedsDir),
+		goose.WithTableName("goose_seed_versions"),
+	)
+	if err != nil {
+		t.Fatalf("goose seed provider: %v", err)
+	}
+	if _, err := provider.Up(context.Background()); err != nil {
+		t.Fatalf("apply seeds: %v", err)
+	}
+}
+
+// TemplateDir returns the absolute path to app/templates.
+func TemplateDir() string {
+	return filepath.Join(repoRoot(), "app", "templates")
 }
 
 func envOr(key, def string) string {

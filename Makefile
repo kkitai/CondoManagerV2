@@ -4,9 +4,10 @@ GOOSE ?= $(shell command -v goose 2>/dev/null || echo goose)
 
 DB_DSN ?= "host=localhost port=5432 user=postgres password=postgres dbname=condo_manager sslmode=disable"
 MIGRATIONS_DIR := app/db/migrations
+SEEDS_DIR      := app/db/seeds
 BINARY := bin/server
 
-.PHONY: all build run test test-coverage migrate migrate-down migrate-status clean docker-up docker-down vet lint
+.PHONY: all build run test test-coverage migrate migrate-down migrate-status seed seed-down clean docker-up docker-down vet lint
 
 all: build
 
@@ -44,6 +45,12 @@ migrate-status:
 
 migrate-reset:
 	$(GOOSE) -dir $(MIGRATIONS_DIR) postgres $(DB_DSN) reset
+
+seed:
+	$(GOOSE) -dir $(SEEDS_DIR) -table goose_seed_versions postgres $(DB_DSN) up
+
+seed-down:
+	$(GOOSE) -dir $(SEEDS_DIR) -table goose_seed_versions postgres $(DB_DSN) down
 
 vet:
 	$(GO) vet ./...

@@ -1,0 +1,139 @@
+{{define "base"}}
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<title>{{if .IsNew}}物件を登録{{else}}物件を編集{{end}} — CondoManager</title>
+<meta name="viewport" content="width=1536"/>
+{{template "property_css" .}}
+</head>
+<body class="bg-cm-bg text-cm-text font-sans antialiased text-sm leading-relaxed">
+<div class="flex min-h-screen">
+{{template "property_sidebar" .}}
+<div class="flex-1 min-w-0 flex flex-col">
+  <header class="h-16 bg-white border-b border-cm-soft flex items-center gap-[18px] px-7">
+    <div class="w-8 h-8 grid place-items-center rounded-md text-cm-text2 cursor-pointer hover:bg-gray-50">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+    </div>
+    <div class="font-semibold text-cm-text flex items-center gap-2.5">
+      <a href="/properties" class="text-cm-text hover:text-cm-primary no-underline">物件管理</a>
+      <svg class="text-cm-text3" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 6 6 6-6 6"/></svg>
+      <span>{{if .IsNew}}物件を登録{{else}}物件を編集{{end}}</span>
+    </div>
+    {{if .CurrentUser}}
+    <div class="ml-auto flex items-center gap-2.5 w-[380px] h-[38px] bg-[#F4F6FA] border border-transparent rounded-[10px] px-3 text-cm-text3 focus-within:bg-white focus-within:border-cm-border">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input class="flex-1 border-0 bg-transparent outline-none text-[13.5px] text-cm-text placeholder:text-cm-text3 font-sans" placeholder="物件名、住所を検索…"/>
+    </div>
+    <div class="flex items-center gap-2.5 px-2.5 py-1 rounded-[10px] cursor-pointer hover:bg-gray-50">
+      <div class="w-[34px] h-[34px] rounded-full bg-cm-primary-l text-cm-primary font-bold text-[13px] grid place-items-center">{{slice (.CurrentUser.Name) 0 1}}</div>
+      <div><div class="font-bold text-[13.5px]">{{.CurrentUser.Name}}</div></div>
+      <svg class="text-cm-text3" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    {{end}}
+  </header>
+
+  <div class="px-7 py-8 pb-[60px] max-w-[800px] mx-auto w-full">
+    <a class="inline-flex items-center gap-1.5 text-cm-primary font-medium text-[13.5px] mb-3.5 cursor-pointer hover:text-cm-primary-d no-underline" href="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 6-6 6 6 6"/></svg>
+      {{if .IsNew}}一覧に戻る{{else}}詳細に戻る{{end}}
+    </a>
+    <div class="mb-7">
+      <h1 class="text-[24px] font-bold tracking-tight m-0 mb-1.5">{{if .IsNew}}物件を登録{{else}}物件情報を編集{{end}}</h1>
+      <div class="text-cm-text3 text-[13px]">基本情報・所在地・管理情報を入力してください</div>
+    </div>
+
+    <div class="bg-white border border-cm-soft rounded-[14px] overflow-hidden shadow-[0_1px_0_rgba(20,30,55,0.02)]">
+      <form method="POST" action="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}">
+        {{if not .IsNew}}<input type="hidden" name="_method" value="PUT">{{end}}
+
+        <div class="px-6 py-5 border-b border-cm-soft">
+          <h3 class="text-[13px] font-bold text-cm-text2 m-0 mb-3.5 flex items-center gap-2">
+            <span class="inline-grid place-items-center w-5 h-5 rounded-full bg-cm-primary-l text-cm-primary text-[11px] font-bold">1</span>基本情報
+          </h3>
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="flex flex-col gap-1.5 col-span-2">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">物件名 <span class="text-cm-red text-[11px] font-bold">必須</span></label>
+              <input type="text" name="name" value="{{.Property.Name}}" required maxlength="200"
+                class="h-[38px] px-3 border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3 {{if index .Errors "name"}}border-cm-red{{else}}border-cm-border{{end}}"
+                placeholder="例: アーバンコート渋谷">
+              {{if index .Errors "name"}}<span class="text-[11.5px] text-cm-red">{{index .Errors "name"}}</span>{{end}}
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">ステータス</label>
+              <div class="relative">
+              <select name="status" class="h-[38px] px-3 pr-8 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 appearance-none">
+                <option value="active" {{if eq (string .Property.Status) "active"}}selected{{end}}>管理中</option>
+                <option value="inactive" {{if eq (string .Property.Status) "inactive"}}selected{{end}}>非管理</option>
+              </select>
+              <svg class="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-cm-text3" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
+              </div>
+              {{if index .Errors "status"}}<span class="text-[11.5px] text-cm-red">{{index .Errors "status"}}</span>{{end}}
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">総戸数</label>
+              <div class="relative">
+                <input type="number" name="unit_count" min="0"
+                  value="{{if .Property.UnitCount}}{{derefInt .Property.UnitCount}}{{end}}"
+                  placeholder="0"
+                  class="h-[38px] px-3 pr-9 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-cm-text3 text-[12.5px] pointer-events-none">戸</span>
+              </div>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">延床面積</label>
+              <div class="relative">
+                <input type="number" name="area" step="0.01" min="0"
+                  value="{{if .Property.Area}}{{printf "%.2f" (derefFloat64 .Property.Area)}}{{end}}"
+                  placeholder="0.00"
+                  class="h-[38px] px-3 pr-9 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3">
+                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-cm-text3 text-[12.5px] pointer-events-none">㎡</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-5 border-b border-cm-soft">
+          <h3 class="text-[13px] font-bold text-cm-text2 m-0 mb-3.5 flex items-center gap-2">
+            <span class="inline-grid place-items-center w-5 h-5 rounded-full bg-cm-primary-l text-cm-primary text-[11px] font-bold">2</span>所在地
+          </h3>
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="flex flex-col gap-1.5 col-span-2">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">住所 <span class="text-cm-red text-[11px] font-bold">必須</span></label>
+              <input type="text" name="address" value="{{.Property.Address}}" required
+                class="h-[38px] px-3 border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3 {{if index .Errors "address"}}border-cm-red{{else}}border-cm-border{{end}}"
+                placeholder="東京都渋谷区神南1-12-6">
+              {{if index .Errors "address"}}<span class="text-[11.5px] text-cm-red">{{index .Errors "address"}}</span>{{end}}
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-5">
+          <h3 class="text-[13px] font-bold text-cm-text2 m-0 mb-3.5 flex items-center gap-2">
+            <span class="inline-grid place-items-center w-5 h-5 rounded-full bg-cm-primary-l text-cm-primary text-[11px] font-bold">3</span>管理情報
+          </h3>
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="flex flex-col gap-1.5">
+              <label class="text-[12.5px] font-semibold text-cm-text2 flex items-center gap-1.5">管理会社</label>
+              <input type="text" name="management_company"
+                value="{{deref .Property.ManagementCompany}}"
+                placeholder="例: 山田不動産株式会社"
+                class="h-[38px] px-3 border border-cm-border rounded-lg bg-white text-[13.5px] text-cm-text font-sans outline-none w-full focus:border-cm-primary focus:ring-2 focus:ring-cm-primary/10 placeholder:text-cm-text3">
+            </div>
+          </div>
+        </div>
+
+        <div class="px-6 py-4 bg-[#FAFBFD] flex justify-end gap-2.5">
+          <a href="{{if .IsNew}}/properties{{else}}/properties/{{.Property.ID}}{{end}}" class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-lg font-semibold text-[13.5px] cursor-pointer border border-cm-border bg-white text-cm-text hover:bg-gray-50 no-underline">キャンセル</a>
+          <button type="submit" class="inline-flex items-center gap-1.5 h-[38px] px-3.5 rounded-lg font-semibold text-[13.5px] cursor-pointer bg-cm-primary border border-cm-primary text-white hover:bg-cm-primary-d hover:border-cm-primary-d">
+            {{if .IsNew}}登録する{{else}}変更を保存{{end}}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+</body>
+</html>
+{{end}}
